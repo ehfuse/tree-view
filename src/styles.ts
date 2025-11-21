@@ -1,0 +1,280 @@
+/**
+ * styles.ts
+ *
+ * @license MIT
+ * @copyright 2025 김영진 (Kim Young Jin)
+ * @author 김영진 (ehfuse@gmail.com)
+ */
+
+import styled, { css } from "styled-components";
+import { TreeItemStyles } from "./types";
+
+// 기본값 상수
+const DEFAULT_VALUES = {
+    CHECKBOX_SPACING: "10px",
+    CHECKBOX_BORDER_COLOR: "#999",
+    ITEM_SPACING: "2px",
+    SEARCH_INPUT_HEIGHT: "40px",
+    SEARCH_INPUT_FONT_SIZE: "16px",
+    TREE_LINE_COLOR: "#d1d1d1",
+    INDENT_SIZE: 20,
+} as const;
+
+export const TreeContainer = styled.div<{
+    $backgroundColor?: string;
+    $border?: string;
+    $borderRadius?: string;
+    $padding?: string;
+    $maxHeight?: string;
+}>`
+    display: flex;
+    flex-direction: column;
+    background-color: ${(props) => props.$backgroundColor || "#ffffff"};
+    border: ${(props) => props.$border || "1px solid #ddd"};
+    border-radius: ${(props) => props.$borderRadius || "4px"};
+
+    .tree-content {
+        flex: 1;
+        overflow-y: auto;
+        max-height: ${(props) => props.$maxHeight || "none"};
+    }
+`;
+
+export const TreeItemContainer = styled.div<{
+    $selectionColor?: string;
+    $hoverColor?: string;
+    $showHover?: boolean;
+    $itemStyles?: TreeItemStyles;
+    $iconColor?: string;
+    $padding?: string;
+    $collapsible?: boolean;
+    $itemSpacing?: string;
+    $checkboxSpacing?: string;
+    $showEndIconOnHover?: boolean;
+    $showTreeLines?: boolean;
+    $treeLineColor?: string;
+}>`
+    padding: ${(props) => props.$padding || "1rem"};
+
+    .tree-node {
+        position: relative;
+    }
+
+    .tree-children {
+        ${(props) =>
+            props.$showTreeLines &&
+            css`
+                position: relative;
+
+                /* 세로선 (자식들 연결) */
+                &::before {
+                    content: "";
+                    position: absolute;
+                    left: var(--tree-line-left, 13px);
+                    top: 0;
+                    bottom: 15px;
+                    width: 1px;
+                    background-color: ${props.$treeLineColor ||
+                    DEFAULT_VALUES.TREE_LINE_COLOR};
+                }
+            `}
+    }
+
+    .tree-item {
+        display: flex;
+        align-items: center;
+        padding: 2px 8px 2px 0;
+        margin-bottom: ${(props) =>
+            props.$itemSpacing || DEFAULT_VALUES.ITEM_SPACING};
+        border-radius: 4px;
+        user-select: none;
+        position: relative;
+
+        &.has-children {
+            cursor: ${(props) => (props.$collapsible ? "pointer" : "default")};
+        }
+
+        &:hover {
+            background-color: ${(props) =>
+                props.$showHover
+                    ? props.$hoverColor
+                        ? `${props.$hoverColor}cc`
+                        : "rgba(0, 0, 0, 0.04)"
+                    : "transparent"};
+        }
+
+        &.selected {
+            background-color: ${(props) => props.$selectionColor || "#e3f2fd"};
+        }
+    }
+
+    .tree-item-content {
+        display: flex;
+        align-items: center;
+        flex: 1;
+    }
+
+    .tree-item-label {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: ${(props) => props.$itemStyles?.color || "inherit"};
+        font-size: ${(props) =>
+            props.$itemStyles?.fontSize
+                ? typeof props.$itemStyles.fontSize === "number"
+                    ? `${props.$itemStyles.fontSize}px`
+                    : props.$itemStyles.fontSize
+                : "inherit"};
+    }
+
+    .expand-icon-container {
+        width: 28px;
+        display: ${(props) => (props.$collapsible ? "flex" : "none")};
+        align-items: center;
+        justify-content: center;
+        color: ${(props) => props.$iconColor || "inherit"};
+    }
+
+    .checkbox-container {
+        margin-right: ${(props) =>
+            props.$checkboxSpacing || DEFAULT_VALUES.CHECKBOX_SPACING};
+        display: flex;
+    }
+
+    .end-icon-container {
+        display: flex;
+        align-items: center;
+        margin-left: auto;
+        visibility: ${(props) =>
+            props.$showEndIconOnHover ? "hidden" : "visible"};
+    }
+
+    .tree-item:hover .end-icon-container {
+        visibility: visible;
+    }
+`;
+
+export const SearchContainer = styled.div`
+    margin-bottom: 1rem;
+`;
+
+export const StyledInput = styled.input<{
+    $searchInputHeight?: string;
+    $searchInputFontSize?: string;
+}>`
+    width: 100%;
+    height: ${(props) =>
+        props.$searchInputHeight || DEFAULT_VALUES.SEARCH_INPUT_HEIGHT};
+    padding: 0 40px 0 42px;
+    font-size: ${(props) =>
+        props.$searchInputFontSize || DEFAULT_VALUES.SEARCH_INPUT_FONT_SIZE};
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    outline: none;
+    box-sizing: border-box;
+
+    &:focus {
+        border-color: #1976d2;
+    }
+`;
+
+export const InputWrapper = styled.div`
+    position: relative;
+
+    .search-icon {
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        pointer-events: none;
+        display: flex;
+    }
+
+    .clear-icon {
+        position: absolute;
+        right: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        cursor: pointer;
+        display: flex;
+        color: #999;
+
+        &:hover {
+            color: #666;
+        }
+    }
+`;
+
+export const StyledCheckbox = styled.input<{
+    $checkboxColor?: string;
+    $checkboxBorderColor?: string;
+}>`
+    appearance: none;
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    margin: 0;
+    vertical-align: middle;
+    border: 2px solid
+        ${(props) =>
+            props.$checkboxBorderColor || DEFAULT_VALUES.CHECKBOX_BORDER_COLOR};
+    border-radius: 3px;
+    background-color: #fff;
+    position: relative;
+
+    &:checked {
+        background-color: ${(props) => props.$checkboxColor || "#1976d2"};
+        border-color: ${(props) => props.$checkboxColor || "#1976d2"};
+
+        &::after {
+            content: "";
+            position: absolute;
+            left: 4px;
+            top: 0px;
+            width: 4px;
+            height: 9px;
+            border: solid white;
+            border-width: 0 2px 2px 0;
+            transform: rotate(45deg);
+        }
+    }
+
+    &:indeterminate {
+        background-color: ${(props) => props.$checkboxColor || "#1976d2"};
+        border-color: ${(props) => props.$checkboxColor || "#1976d2"};
+
+        &::after {
+            content: "";
+            position: absolute;
+            left: 3px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 8px;
+            height: 0;
+            border: solid white;
+            border-width: 0 0 2px 0;
+        }
+    }
+
+    &:disabled {
+        cursor: not-allowed;
+        opacity: 0.5;
+    }
+`;
+
+export const Collapse = styled.div<{
+    $isOpen: boolean;
+    $shouldAnimate?: boolean;
+}>`
+    overflow: hidden;
+    transition: ${(props) =>
+        props.$shouldAnimate ? "max-height 0.2s ease-in-out" : "none"};
+    max-height: ${(props) => (props.$isOpen ? "2000px" : "0")};
+`;
+
+export const EmptyMessage = styled.div`
+    text-align: center;
+    padding: 2rem 0;
+    color: #666;
+`;

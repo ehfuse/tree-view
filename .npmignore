@@ -1,0 +1,29 @@
+# Source files
+src/
+
+# Development files
+tsconfig.json
+build.js
+.gitignore
+.npmignore
+
+# IDE
+.vscode/
+.idea/
+
+# Git
+.git/
+
+# Testing
+coverage/
+*.test.ts
+*.test.tsx
+*.spec.ts
+*.spec.tsx
+
+# Documentation (if any)
+docs/
+
+# Build configuration
+.eslintrc*
+.prettierrc*

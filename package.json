@@ -1,0 +1,49 @@
+{
+    "name": "@ehfuse/tree-view",
+    "version": "1.0.0",
+    "description": "A customizable React TreeView component",
+    "main": "dist/index.js",
+    "module": "dist/index.esm.js",
+    "types": "dist/index.d.ts",
+    "files": [
+        "dist"
+    ],
+    "scripts": {
+        "build": "node build.js && tsc --emitDeclarationOnly",
+        "prepublishOnly": "npm run build",
+        "example": "cd example && npm run dev"
+    },
+    "keywords": [
+        "react",
+        "tree",
+        "treeview",
+        "component",
+        "ui",
+        "checkbox",
+        "hierarchical"
+    ],
+    "author": "김영진 (ehfuse@gmail.com)",
+    "license": "MIT",
+    "peerDependencies": {
+        "react": "^18.0.0",
+        "styled-components": "^5.0.0 || ^6.0.0",
+        "@ehfuse/overlay-scrollbar": "1.5.10"
+    },
+    "devDependencies": {
+        "@ehfuse/overlay-scrollbar": "1.5.10",
+        "@types/react": "^18.3.12",
+        "@types/styled-components": "^5.1.34",
+        "esbuild": "^0.24.0",
+        "react": "^18.3.1",
+        "react-dom": "^18.3.1",
+        "typescript": "^5.7.2"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/ehfuse/tree-view.git"
+    },
+    "bugs": {
+        "url": "https://github.com/ehfuse/tree-view/issues"
+    },
+    "homepage": "https://github.com/ehfuse/tree-view#readme"
+}
