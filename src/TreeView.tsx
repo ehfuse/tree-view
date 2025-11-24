@@ -21,6 +21,7 @@ import {
     ChevronRightIcon,
     SearchIcon,
     CloseIcon,
+    CheckboxIcon,
 } from "./icons";
 import {
     TreeContainer,
@@ -28,7 +29,6 @@ import {
     SearchContainer,
     StyledInput,
     InputWrapper,
-    StyledCheckbox,
     Collapse,
     EmptyMessage,
 } from "./styles";
@@ -684,26 +684,28 @@ export const TreeView: React.FC<TreeViewProps> = ({
                                 className="checkbox-container"
                                 onClick={handleCheckboxClick}
                             >
-                                <StyledCheckbox
-                                    type="checkbox"
-                                    checked={checked}
-                                    $checkboxColor={styles.checkboxColor}
-                                    $checkboxBorderColor={
-                                        styles.checkboxBorderColor
-                                    }
-                                    ref={(el) => {
-                                        if (el) {
-                                            el.indeterminate = indeterminate;
-                                        }
+                                <div
+                                    style={{
+                                        cursor: "pointer",
+                                        display: "flex",
+                                        alignItems: "center",
                                     }}
-                                    onChange={(e) =>
-                                        handleItemCheck(
-                                            node.id,
-                                            e.target.checked
-                                        )
-                                    }
-                                    disabled={node.disabled}
-                                />
+                                    onClick={(e) => {
+                                        if (node.disabled) return;
+                                        e.stopPropagation();
+                                        handleItemCheck(node.id, !checked);
+                                    }}
+                                >
+                                    <CheckboxIcon
+                                        checked={checked}
+                                        indeterminate={indeterminate}
+                                        disabled={node.disabled}
+                                        checkboxColor={styles.checkboxColor}
+                                        checkboxBorderColor={
+                                            styles.checkboxBorderColor
+                                        }
+                                    />
+                                </div>
                             </div>
                         )}
 

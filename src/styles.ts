@@ -206,63 +206,6 @@ export const InputWrapper = styled.div`
     }
 `;
 
-export const StyledCheckbox = styled.input<{
-    $checkboxColor?: string;
-    $checkboxBorderColor?: string;
-}>`
-    appearance: none;
-    width: 18px;
-    height: 18px;
-    cursor: pointer;
-    margin: 0;
-    vertical-align: middle;
-    border: 2px solid
-        ${(props) =>
-            props.$checkboxBorderColor || DEFAULT_VALUES.CHECKBOX_BORDER_COLOR};
-    border-radius: 3px;
-    background-color: #fff;
-    position: relative;
-
-    &:checked {
-        background-color: ${(props) => props.$checkboxColor || "#1976d2"};
-        border-color: ${(props) => props.$checkboxColor || "#1976d2"};
-
-        &::after {
-            content: "";
-            position: absolute;
-            left: 4px;
-            top: 0px;
-            width: 4px;
-            height: 9px;
-            border: solid white;
-            border-width: 0 2px 2px 0;
-            transform: rotate(45deg);
-        }
-    }
-
-    &:indeterminate {
-        background-color: ${(props) => props.$checkboxColor || "#1976d2"};
-        border-color: ${(props) => props.$checkboxColor || "#1976d2"};
-
-        &::after {
-            content: "";
-            position: absolute;
-            left: 3px;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 8px;
-            height: 0;
-            border: solid white;
-            border-width: 0 0 2px 0;
-        }
-    }
-
-    &:disabled {
-        cursor: not-allowed;
-        opacity: 0.5;
-    }
-`;
-
 export const Collapse = styled.div<{
     $isOpen: boolean;
     $shouldAnimate?: boolean;

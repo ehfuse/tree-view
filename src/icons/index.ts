@@ -10,3 +10,4 @@ export { ExpandMoreIcon } from "./ExpandMoreIcon";
 export { ChevronRightIcon } from "./ChevronRightIcon";
 export { SearchIcon } from "./SearchIcon";
 export { CloseIcon } from "./CloseIcon";
+export { CheckboxIcon } from "./CheckboxIcon";
