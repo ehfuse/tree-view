@@ -38,7 +38,7 @@ export interface TreeViewStyles {
     borderRadius?: string; // 테두리 둥글기
     padding?: string; // 안쪽 여백
     iconColor?: string; // 확장/축소 아이콘 색상
-    maxHeight?: string; // 트리 컨텐츠 최대 높이
+    maxHeight?: string | number; // 트리 컨텐츠 최대 높이 (number 입력 시 px 단위)
     checkboxColor?: string; // 체크박스 배경색 (체크됨)
     checkboxBorderColor?: string; // 체크박스 테두리 색상 (기본값: #999)
     checkboxSpacing?: string; // 체크박스와 텍스트 간격 (기본값: 8px)
@@ -46,7 +46,7 @@ export interface TreeViewStyles {
     searchInputHeight?: string; // 검색 입력창 높이 (기본값: 40px)
     searchInputFontSize?: string; // 검색 입력창 폰트 크기 (기본값: 16px)
     treeLineColor?: string; // 트리 라인 색상 (기본값: #ddd)
-    indentSize?: number; // 들여쓰기 크기 px (기본값: 15)
+    indentSize?: number; // 들여쓰기 크기 px (기본값: 20)
 }
 
 /** 트리뷰 컴포넌트 Props */

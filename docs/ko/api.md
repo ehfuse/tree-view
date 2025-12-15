@@ -99,7 +99,7 @@ interface TreeViewStyles {
     borderRadius?: string; // 테두리 둥글기
     padding?: string; // 안쪽 여백
     iconColor?: string; // 아이콘 색상
-    maxHeight?: string; // 최대 높이
+    maxHeight?: string | number; // 최대 높이 (number 입력 시 px 단위)
     checkboxColor?: string; // 체크박스 색상
     checkboxBorderColor?: string; // 체크박스 테두리 색상
     checkboxSpacing?: string; // 체크박스 간격

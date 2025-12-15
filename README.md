@@ -2,23 +2,26 @@
 
 React 기반의 커스터마이징 가능한 트리뷰 컴포넌트입니다.
 
-## 특징
+A customizable tree view component for React.
 
--   ✅ 완전한 TypeScript 지원
--   🎨 Styled Components 기반 스타일링
--   📦 체크박스 다중/단일 선택
--   🔍 실시간 검색 기능
--   🌳 계층 구조 시각화
--   ⚡ 가볍고 빠른 성능
--   🎯 접근성 고려
+## 특징 / Features
 
-## 설치
+-   ✅ 완전한 TypeScript 지원 / Full TypeScript support
+-   🎨 Styled Components 기반 스타일링 / Styled Components based styling
+-   📦 체크박스 다중/단일 선택 / Multi/Single selection with checkboxes
+-   🔍 실시간 검색 기능 / Real-time search functionality
+-   🌳 계층 구조 시각화 / Hierarchical structure visualization
+-   ⚡ 가볍고 빠른 성능 / Lightweight and fast performance
+-   🎯 접근성 고려 / Accessibility considered
+-   🎨 MUI 테마 지원 / MUI theme support
+
+## 설치 / Installation
 
 ```bash
-npm install @ehfuse/tree-view @ehfuse/overlay-scrollbar@1.5.10
+npm install @ehfuse/tree-view @ehfuse/overlay-scrollbar@^1.5.16
 ```
 
-## 기본 사용법
+## 기본 사용법 / Basic Usage
 
 ```tsx
 import { TreeView } from "@ehfuse/tree-view";
@@ -27,10 +30,10 @@ import type { TreeItem } from "@ehfuse/tree-view";
 const data: TreeItem[] = [
     {
         id: "root",
-        label: "루트",
+        label: "Root",
         children: [
-            { id: "child1", label: "자식 1", parentId: "root" },
-            { id: "child2", label: "자식 2", parentId: "root" },
+            { id: "child1", label: "Child 1", parentId: "root" },
+            { id: "child2", label: "Child 2", parentId: "root" },
         ],
     },
 ];
@@ -45,12 +48,13 @@ function App() {
             checkbox={true}
             multiSelect={true}
             showSearch={true}
+            searchSize="medium"
         />
     );
 }
 ```
 
-## 시그니처
+## 시그니처 / Signature
 
 ```typescript
 interface TreeViewProps {
@@ -61,6 +65,7 @@ interface TreeViewProps {
     excludeItems?: string[];
     items: TreeItem[];
     showSearch?: boolean;
+    searchSize?: "small" | "medium" | "large";
     searchPlaceholder?: string;
     showSelection?: boolean;
     showHover?: boolean;
@@ -90,12 +95,20 @@ interface TreeItem {
 }
 ```
 
-## 문서
+## 문서 / Documentation
+
+### 한국어
 
 -   [시작하기](./docs/ko/getting-started.md)
 -   [API 문서](./docs/ko/api.md)
 -   [예제](./docs/ko/examples.md)
 
-## 라이선스
+### English
+
+-   [Getting Started](./docs/en/getting-started.md)
+-   [API Documentation](./docs/en/api.md)
+-   [Examples](./docs/en/examples.md)
+
+## 라이선스 / License
 
 MIT © 김영진 (ehfuse@gmail.com)

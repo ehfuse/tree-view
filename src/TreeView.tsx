@@ -65,6 +65,9 @@ export const TreeView: React.FC<TreeViewProps> = ({
     className,
     style,
 }) => {
+    // indentSize 기본값 처리
+    const indentSizeValue = styles.indentSize ?? 20;
+
     const [searchValue, setSearchValue] = useState("");
     const [debouncedSearchValue, setDebouncedSearchValue] = useState("");
     const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
@@ -667,7 +670,7 @@ export const TreeView: React.FC<TreeViewProps> = ({
                     } ${isExpanded ? "expanded" : ""}`}
                     onClick={() => hasChildren && toggleExpand(node.id)}
                     style={{
-                        marginLeft: `${level * (styles.indentSize || 20)}px`,
+                        marginLeft: `${level * indentSizeValue}px`,
                     }}
                 >
                     <div className="tree-item-content">
@@ -743,10 +746,7 @@ export const TreeView: React.FC<TreeViewProps> = ({
                                     ...(showTreeLines
                                         ? {
                                               "--tree-line-left": `${
-                                                  level *
-                                                      (styles.indentSize ||
-                                                          20) +
-                                                  13
+                                                  level * indentSizeValue + 13
                                               }px`,
                                           }
                                         : {}),
@@ -805,7 +805,11 @@ export const TreeView: React.FC<TreeViewProps> = ({
                 $border={styles.border}
                 $borderRadius={styles.borderRadius}
                 $padding={styles.padding}
-                $maxHeight={styles.maxHeight}
+                $maxHeight={
+                    typeof styles.maxHeight === "number"
+                        ? `${styles.maxHeight}px`
+                        : styles.maxHeight
+                }
             >
                 <OverlayScrollbar className="tree-content">
                     <TreeItemContainer
