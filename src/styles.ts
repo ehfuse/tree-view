@@ -207,7 +207,7 @@ export const StyledInput = styled.input<{
     box-sizing: border-box;
 
     &:focus {
-        border-color: #1976d2;
+        border-color: var(--mui-palette-primary-main, #1976d2);
     }
 `;
 
@@ -223,7 +223,7 @@ export const InputWrapper = styled.div<{
         left: -1px;
         right: -1px;
         bottom: -1px;
-        border: 2px solid #1976d2;
+        border: 2px solid var(--mui-palette-primary-main, #1976d2);
         border-radius: 5px;
         pointer-events: none;
         opacity: 0;
