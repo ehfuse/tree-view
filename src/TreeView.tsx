@@ -41,6 +41,7 @@ export const TreeView: React.FC<TreeViewProps> = ({
     excludeItems = [],
     items = [],
     showSearch = true,
+    searchSize = "medium",
     searchPlaceholder = "검색어를 입력하세요",
     showSelection = false,
     showHover = true,
@@ -72,6 +73,7 @@ export const TreeView: React.FC<TreeViewProps> = ({
 
     const onChangeRef = useRef(onChange);
     const debounceTimerRef = useRef<ReturnType<typeof setTimeout>>();
+    const searchInputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
         onChangeRef.current = onChange;
@@ -769,13 +771,15 @@ export const TreeView: React.FC<TreeViewProps> = ({
         <div className={`ehfuse-tree-view ${className || ""}`} style={style}>
             {showSearch && (
                 <SearchContainer>
-                    <InputWrapper>
+                    <InputWrapper $searchSize={searchSize}>
                         <div className="search-icon">
                             <SearchIcon sx={{ color: "#999", mr: 1 }} />
                         </div>
                         <StyledInput
+                            ref={searchInputRef}
                             $searchInputHeight={styles.searchInputHeight}
                             $searchInputFontSize={styles.searchInputFontSize}
+                            $searchSize={searchSize}
                             placeholder={searchPlaceholder}
                             value={searchValue}
                             onChange={(e) => setSearchValue(e.target.value)}
@@ -784,7 +788,10 @@ export const TreeView: React.FC<TreeViewProps> = ({
                         {searchValue && (
                             <div
                                 className="clear-icon"
-                                onClick={() => setSearchValue("")}
+                                onClick={() => {
+                                    setSearchValue("");
+                                    searchInputRef.current?.focus();
+                                }}
                             >
                                 <CloseIcon fontSize="small" />
                             </div>

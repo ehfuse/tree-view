@@ -316,6 +316,7 @@ function BasicExample() {
                 items={dataWithIcons}
                 onChange={setSelectedItems}
                 showSearch={showSearch}
+                searchSize="medium"
                 showSelection={showSelection}
                 showHover={showHover}
                 showEndIconOnHover={showEndIconOnHover}

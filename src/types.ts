@@ -58,6 +58,7 @@ export interface TreeViewProps {
     excludeItems?: string[]; // 제외할 아이템 label 배열
     items: TreeItem[]; // 트리 데이터
     showSearch?: boolean; // 검색창 표시 여부
+    searchSize?: "small" | "medium" | "large"; // 검색창 크기 (기본값: "medium")
     searchPlaceholder?: string; // 검색창 placeholder (기본값: "검색어를 입력하세요")
     showSelection?: boolean; // 선택된 아이템 배경색 표시 여부
     showHover?: boolean; // 호버 배경색 표시 여부

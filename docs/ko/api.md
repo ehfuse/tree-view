@@ -16,29 +16,30 @@
 
 ## Props 요약표
 
-| Prop                                      | 타입                           | 기본값                  | 필수 | 설명                        |
-| ----------------------------------------- | ------------------------------ | ----------------------- | ---- | --------------------------- |
-| [`items`](#items)                         | `TreeItem[]`                   | -                       | ✅   | 트리 데이터 배열            |
-| [`onChange`](#onchange)                   | `(labels: string[]) => void`   | -                       | ❌   | 선택 변경 콜백              |
-| [`initialSelections`](#initialselections) | `string[]`                     | `[]`                    | ❌   | 초기 선택 항목 (label 배열) |
-| [`resetTrigger`](#resettrigger)           | `number`                       | -                       | ❌   | 선택 초기화 트리거          |
-| [`defaultExpanded`](#defaultexpanded)     | `boolean`                      | `true`                  | ❌   | 초기 확장 상태              |
-| [`excludeItems`](#excludeitems)           | `string[]`                     | `[]`                    | ❌   | 제외할 항목 (label 배열)    |
-| [`showSearch`](#showsearch)               | `boolean`                      | `true`                  | ❌   | 검색창 표시 여부            |
-| [`searchPlaceholder`](#searchplaceholder) | `string`                       | `"검색어를 입력하세요"` | ❌   | 검색창 placeholder          |
-| [`showSelection`](#showselection)         | `boolean`                      | `false`                 | ❌   | 선택 배경색 표시            |
-| [`showHover`](#showhover)                 | `boolean`                      | `true`                  | ❌   | 호버 배경색 표시            |
-| [`showEndIconOnHover`](#showendiconhover) | `boolean`                      | `false`                 | ❌   | endIcon 호버 시에만 표시    |
-| [`checkbox`](#checkbox)                   | `boolean`                      | `true`                  | ❌   | 체크박스 표시 여부          |
-| [`multiSelect`](#multiselect)             | `boolean`                      | `true`                  | ❌   | 다중 선택 허용              |
-| [`selectable`](#selectable)               | `boolean`                      | `true`                  | ❌   | 선택 가능 여부              |
-| [`collapsible`](#collapsible)             | `boolean`                      | `true`                  | ❌   | 접기/펼치기 가능            |
-| [`showTreeLines`](#showtreelines)         | `boolean`                      | `false`                 | ❌   | 트리 라인 표시              |
-| [`selectionMode`](#selectionmode)         | `"all" \| "parent" \| "child"` | `"parent"`              | ❌   | 선택 항목 반환 방식         |
-| [`itemStyles`](#itemstyles)               | `TreeItemStyles`               | -                       | ❌   | 전체 아이템 기본 스타일     |
-| [`styles`](#styles)                       | `TreeViewStyles`               | -                       | ❌   | 컨테이너 스타일             |
-| [`className`](#classname)                 | `string`                       | -                       | ❌   | CSS 클래스명                |
-| [`style`](#style)                         | `React.CSSProperties`          | -                       | ❌   | 인라인 스타일               |
+| Prop                                      | 타입                             | 기본값                  | 필수 | 설명                        |
+| ----------------------------------------- | -------------------------------- | ----------------------- | ---- | --------------------------- |
+| [`items`](#items)                         | `TreeItem[]`                     | -                       | ✅   | 트리 데이터 배열            |
+| [`onChange`](#onchange)                   | `(labels: string[]) => void`     | -                       | ❌   | 선택 변경 콜백              |
+| [`initialSelections`](#initialselections) | `string[]`                       | `[]`                    | ❌   | 초기 선택 항목 (label 배열) |
+| [`resetTrigger`](#resettrigger)           | `number`                         | -                       | ❌   | 선택 초기화 트리거          |
+| [`defaultExpanded`](#defaultexpanded)     | `boolean`                        | `true`                  | ❌   | 초기 확장 상태              |
+| [`excludeItems`](#excludeitems)           | `string[]`                       | `[]`                    | ❌   | 제외할 항목 (label 배열)    |
+| [`showSearch`](#showsearch)               | `boolean`                        | `true`                  | ❌   | 검색창 표시 여부            |
+| [`searchSize`](#searchsize)               | `"small" \| "medium" \| "large"` | `"medium"`              | ❌   | 검색창 크기 (MUI 기준)      |
+| [`searchPlaceholder`](#searchplaceholder) | `string`                         | `"검색어를 입력하세요"` | ❌   | 검색창 placeholder          |
+| [`showSelection`](#showselection)         | `boolean`                        | `false`                 | ❌   | 선택 배경색 표시            |
+| [`showHover`](#showhover)                 | `boolean`                        | `true`                  | ❌   | 호버 배경색 표시            |
+| [`showEndIconOnHover`](#showendiconhover) | `boolean`                        | `false`                 | ❌   | endIcon 호버 시에만 표시    |
+| [`checkbox`](#checkbox)                   | `boolean`                        | `true`                  | ❌   | 체크박스 표시 여부          |
+| [`multiSelect`](#multiselect)             | `boolean`                        | `true`                  | ❌   | 다중 선택 허용              |
+| [`selectable`](#selectable)               | `boolean`                        | `true`                  | ❌   | 선택 가능 여부              |
+| [`collapsible`](#collapsible)             | `boolean`                        | `true`                  | ❌   | 접기/펼치기 가능            |
+| [`showTreeLines`](#showtreelines)         | `boolean`                        | `false`                 | ❌   | 트리 라인 표시              |
+| [`selectionMode`](#selectionmode)         | `"all" \| "parent" \| "child"`   | `"parent"`              | ❌   | 선택 항목 반환 방식         |
+| [`itemStyles`](#itemstyles)               | `TreeItemStyles`                 | -                       | ❌   | 전체 아이템 기본 스타일     |
+| [`styles`](#styles)                       | `TreeViewStyles`                 | -                       | ❌   | 컨테이너 스타일             |
+| [`className`](#classname)                 | `string`                         | -                       | ❌   | CSS 클래스명                |
+| [`style`](#style)                         | `React.CSSProperties`            | -                       | ❌   | 인라인 스타일               |
 
 ---
 
@@ -53,6 +54,7 @@ interface TreeViewProps {
     excludeItems?: string[];
     items: TreeItem[];
     showSearch?: boolean;
+    searchSize?: "small" | "medium" | "large";
     searchPlaceholder?: string;
     showSelection?: boolean;
     showHover?: boolean;
@@ -284,6 +286,29 @@ const [resetCount, setResetCount] = useState(0);
 
 ```tsx
 <TreeView items={items} showSearch={true} />
+```
+
+#### searchSize
+
+-   **타입**: `"small" | "medium" | "large"`
+-   **기본값**: `"medium"`
+-   **설명**: 검색창의 크기를 설정합니다. MUI TextField 기준으로 설계되었습니다.
+
+| Size   | 높이 | 폰트 크기 |
+| ------ | ---- | --------- |
+| small  | 40px | 14px      |
+| medium | 56px | 16px      |
+| large  | 64px | 18px      |
+
+```tsx
+// 작은 검색창
+<TreeView items={items} searchSize="small" />
+
+// 기본 크기
+<TreeView items={items} searchSize="medium" />
+
+// 큰 검색창
+<TreeView items={items} searchSize="large" />
 ```
 
 #### searchPlaceholder

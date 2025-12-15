@@ -159,16 +159,48 @@ export const SearchContainer = styled.div`
     margin-bottom: 1rem;
 `;
 
+// MUI TextField 기준 크기
+const SEARCH_SIZE_CONFIG = {
+    small: {
+        height: "40px",
+        fontSize: "14px",
+        padding: "0 36px 0 38px",
+        iconLeft: "12px",
+        iconRight: "12px",
+    },
+    medium: {
+        height: "56px",
+        fontSize: "16px",
+        padding: "0 48px 0 50px",
+        iconLeft: "16px",
+        iconRight: "16px",
+    },
+    large: {
+        height: "64px",
+        fontSize: "18px",
+        padding: "0 52px 0 54px",
+        iconLeft: "18px",
+        iconRight: "18px",
+    },
+} as const;
+
+export type SearchSize = "small" | "medium" | "large";
+export { SEARCH_SIZE_CONFIG };
+
 export const StyledInput = styled.input<{
     $searchInputHeight?: string;
     $searchInputFontSize?: string;
+    $searchSize?: "small" | "medium" | "large";
 }>`
     width: 100%;
     height: ${(props) =>
-        props.$searchInputHeight || DEFAULT_VALUES.SEARCH_INPUT_HEIGHT};
-    padding: 0 40px 0 42px;
+        props.$searchInputHeight ||
+        SEARCH_SIZE_CONFIG[props.$searchSize || "medium"].height};
+    padding: ${(props) =>
+        SEARCH_SIZE_CONFIG[props.$searchSize || "medium"].padding};
     font-size: ${(props) =>
-        props.$searchInputFontSize || DEFAULT_VALUES.SEARCH_INPUT_FONT_SIZE};
+        props.$searchInputFontSize ||
+        SEARCH_SIZE_CONFIG[props.$searchSize || "medium"].fontSize};
     border: 1px solid #ddd;
     border-radius: 4px;
     outline: none;
@@ -179,12 +211,37 @@ export const StyledInput = styled.input<{
     }
 `;
 
-export const InputWrapper = styled.div`
+export const InputWrapper = styled.div<{
+    $searchSize?: SearchSize;
+}>`
     position: relative;
+
+    &::after {
+        content: "";
+        position: absolute;
+        top: -1px;
+        left: -1px;
+        right: -1px;
+        bottom: -1px;
+        border: 2px solid #1976d2;
+        border-radius: 5px;
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity 0.2s ease;
+    }
+
+    &:focus-within::after {
+        opacity: 1;
+    }
+
+    &:focus-within input {
+        border-color: transparent;
+    }
 
     .search-icon {
         position: absolute;
-        left: 12px;
+        left: ${(props) =>
+            SEARCH_SIZE_CONFIG[props.$searchSize || "medium"].iconLeft};
         top: 50%;
         transform: translateY(-50%);
         pointer-events: none;
@@ -193,7 +250,8 @@ export const InputWrapper = styled.div`
 
     .clear-icon {
         position: absolute;
-        right: 12px;
+        right: ${(props) =>
+            SEARCH_SIZE_CONFIG[props.$searchSize || "medium"].iconRight};
         top: 50%;
         transform: translateY(-50%);
         cursor: pointer;
