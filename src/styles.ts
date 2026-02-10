@@ -207,7 +207,8 @@ export const StyledInput = styled.input<{
     box-sizing: border-box;
 
     &:focus {
-        border-color: var(--mui-palette-primary-main, #1976d2);
+        border-color: transparent;
+        box-shadow: inset 0 0 0 2px var(--mui-palette-primary-main, #1976d2);
     }
 `;
 
@@ -215,28 +216,6 @@ export const InputWrapper = styled.div<{
     $searchSize?: SearchSize;
 }>`
     position: relative;
-
-    &::after {
-        content: "";
-        position: absolute;
-        top: -1px;
-        left: -1px;
-        right: -1px;
-        bottom: -1px;
-        border: 2px solid var(--mui-palette-primary-main, #1976d2);
-        border-radius: 5px;
-        pointer-events: none;
-        opacity: 0;
-        transition: opacity 0.2s ease;
-    }
-
-    &:focus-within::after {
-        opacity: 1;
-    }
-
-    &:focus-within input {
-        border-color: transparent;
-    }
 
     .search-icon {
         position: absolute;

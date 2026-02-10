@@ -6,23 +6,11 @@
  * @author 김영진 (ehfuse@gmail.com)
  */
 
-import React, {
-    useState,
-    useEffect,
-    useRef,
-    useMemo,
-    useCallback,
-} from "react";
+import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { OverlayScrollbar } from "@ehfuse/overlay-scrollbar";
 
 import { TreeViewProps, TreeItem, TreeNode } from "./types";
-import {
-    ExpandMoreIcon,
-    ChevronRightIcon,
-    SearchIcon,
-    CloseIcon,
-    CheckboxIcon,
-} from "./icons";
+import { ExpandMoreIcon, ChevronRightIcon, SearchIcon, CloseIcon, CheckboxIcon } from "./icons";
 import {
     TreeContainer,
     TreeItemContainer,
@@ -75,7 +63,7 @@ export const TreeView: React.FC<TreeViewProps> = ({
     const [isAnimationEnabled, setIsAnimationEnabled] = useState(false);
 
     const onChangeRef = useRef(onChange);
-    const debounceTimerRef = useRef<ReturnType<typeof setTimeout>>();
+    const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const searchInputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
@@ -106,42 +94,26 @@ export const TreeView: React.FC<TreeViewProps> = ({
             excludedIds: Set<string> | undefined,
             counter: { current: number }
         ): TreeNode[] => {
-            const filtered = sourceItems.filter(
-                (item) =>
-                    item.parentId === parentId && !excludedIds?.has(item.id)
-            );
+            const filtered = sourceItems.filter((item) => item.parentId === parentId && !excludedIds?.has(item.id));
 
             return filtered.map((item) => ({
                 id: `node-${counter.current++}`,
                 itemId: item.id,
-                label: item.remark
-                    ? `${item.label} (${item.remark})`
-                    : item.label,
+                label: item.remark ? `${item.label} (${item.remark})` : item.label,
                 remark: item.remark,
                 disabled: item.disabled,
                 styles: item.styles,
                 endIcon: item.endIcon,
                 children: item.children
-                    ? item.children.map((child) =>
-                          buildSingleNode(child, excludedIds, counter)
-                      )
-                    : buildTreeNodes(
-                          sourceItems,
-                          item.id,
-                          excludedIds,
-                          counter
-                      ),
+                    ? item.children.map((child) => buildSingleNode(child, excludedIds, counter))
+                    : buildTreeNodes(sourceItems, item.id, excludedIds, counter),
             }));
         },
         []
     );
 
     const buildSingleNode = useCallback(
-        (
-            item: TreeItem,
-            excludedIds?: Set<string>,
-            counter?: { current: number }
-        ): TreeNode => {
+        (item: TreeItem, excludedIds?: Set<string>, counter?: { current: number }): TreeNode => {
             const cnt = counter || { current: 0 };
             if (excludedIds?.has(item.id)) {
                 return {
@@ -155,18 +127,12 @@ export const TreeView: React.FC<TreeViewProps> = ({
             return {
                 id: `node-${cnt.current++}`,
                 itemId: item.id,
-                label: item.remark
-                    ? `${item.label} (${item.remark})`
-                    : item.label,
+                label: item.remark ? `${item.label} (${item.remark})` : item.label,
                 remark: item.remark,
                 disabled: item.disabled,
                 styles: item.styles,
                 endIcon: item.endIcon,
-                children: item.children
-                    ? item.children.map((child) =>
-                          buildSingleNode(child, excludedIds, cnt)
-                      )
-                    : [],
+                children: item.children ? item.children.map((child) => buildSingleNode(child, excludedIds, cnt)) : [],
             };
         },
         []
@@ -230,32 +196,26 @@ export const TreeView: React.FC<TreeViewProps> = ({
     }, [items, excludedIds, buildTreeNodes]);
 
     // 검색 필터링
-    const filterTreeBySearch = useCallback(
-        (nodes: TreeNode[], searchTerm: string): TreeNode[] => {
-            if (!searchTerm) return nodes;
+    const filterTreeBySearch = useCallback((nodes: TreeNode[], searchTerm: string): TreeNode[] => {
+        if (!searchTerm) return nodes;
 
-            const term = searchTerm.toLowerCase();
-            const filtered: TreeNode[] = [];
+        const term = searchTerm.toLowerCase();
+        const filtered: TreeNode[] = [];
 
-            for (const node of nodes) {
-                const matchesSearch = node.label.toLowerCase().includes(term);
-                const filteredChildren = filterTreeBySearch(
-                    node.children,
-                    searchTerm
-                );
+        for (const node of nodes) {
+            const matchesSearch = node.label.toLowerCase().includes(term);
+            const filteredChildren = filterTreeBySearch(node.children, searchTerm);
 
-                if (matchesSearch || filteredChildren.length > 0) {
-                    filtered.push({
-                        ...node,
-                        children: filteredChildren,
-                    });
-                }
+            if (matchesSearch || filteredChildren.length > 0) {
+                filtered.push({
+                    ...node,
+                    children: filteredChildren,
+                });
             }
+        }
 
-            return filtered;
-        },
-        []
-    );
+        return filtered;
+    }, []);
 
     const filteredTreeNodes = useMemo(() => {
         return filterTreeBySearch(allTreeNodes, debouncedSearchValue);
@@ -313,21 +273,12 @@ export const TreeView: React.FC<TreeViewProps> = ({
 
     // 초기 선택 설정
     const isInitialSelectionSet = useRef(false);
-    useEffect(() => {
-        if (initialSelections.length === 0 || isInitialSelectionSet.current)
-            return;
-        isInitialSelectionSet.current = true;
-
+    const buildSelectedIds = useCallback(() => {
         const selectedIds = new Set<string>();
         const findNodesByLabels = (nodes: TreeNode[]) => {
             nodes.forEach((node) => {
-                const originalLabel = flattenedItems.find(
-                    (item) => item.id === node.itemId
-                )?.label;
-                if (
-                    originalLabel &&
-                    initialSelections.includes(originalLabel)
-                ) {
+                const originalLabel = flattenedItems.find((item) => item.id === node.itemId)?.label;
+                if (originalLabel && initialSelections.includes(originalLabel)) {
                     selectedIds.add(node.id);
                     // 하위 항목도 모두 선택
                     addAllChildren(node.id, selectedIds, allTreeNodes);
@@ -339,15 +290,25 @@ export const TreeView: React.FC<TreeViewProps> = ({
         };
 
         findNodesByLabels(allTreeNodes);
-        setSelectedItems(selectedIds);
-    }, [initialSelections, items, allTreeNodes]);
+        return selectedIds;
+    }, [initialSelections, flattenedItems, allTreeNodes]);
+
+    useEffect(() => {
+        if (initialSelections.length === 0 || isInitialSelectionSet.current) return;
+        isInitialSelectionSet.current = true;
+        setSelectedItems(buildSelectedIds());
+    }, [initialSelections, buildSelectedIds]);
 
     // 리셋 트리거
     useEffect(() => {
         if (resetTrigger && resetTrigger > 0) {
-            setSelectedItems(new Set());
+            if (initialSelections.length === 0) {
+                setSelectedItems(new Set());
+            } else {
+                setSelectedItems(buildSelectedIds());
+            }
         }
-    }, [resetTrigger]);
+    }, [resetTrigger, initialSelections, buildSelectedIds]);
 
     // selectable이 false로 변경되면 선택 해제
     useEffect(() => {
@@ -360,19 +321,16 @@ export const TreeView: React.FC<TreeViewProps> = ({
     }, [selectable]);
 
     // 트리 아이템 찾기
-    const findNodeById = useCallback(
-        (id: string, nodes: TreeNode[]): TreeNode | null => {
-            for (const node of nodes) {
-                if (node.id === id) return node;
-                if (node.children.length > 0) {
-                    const found = findNodeById(id, node.children);
-                    if (found) return found;
-                }
+    const findNodeById = useCallback((id: string, nodes: TreeNode[]): TreeNode | null => {
+        for (const node of nodes) {
+            if (node.id === id) return node;
+            if (node.children.length > 0) {
+                const found = findNodeById(id, node.children);
+                if (found) return found;
             }
-            return null;
-        },
-        []
-    );
+        }
+        return null;
+    }, []);
 
     // 모든 자식 ID 가져오기
     const getAllChildrenIds = useCallback((node: TreeNode): string[] => {
@@ -388,11 +346,7 @@ export const TreeView: React.FC<TreeViewProps> = ({
     }, []);
 
     // 하위 항목 모두 선택
-    const addAllChildren = (
-        nodeId: string,
-        selectedSet: Set<string>,
-        nodes: TreeNode[]
-    ) => {
+    const addAllChildren = (nodeId: string, selectedSet: Set<string>, nodes: TreeNode[]) => {
         const node = findNodeById(nodeId, nodes);
         if (!node) return;
 
@@ -402,19 +356,13 @@ export const TreeView: React.FC<TreeViewProps> = ({
             // 동일한 itemId를 가진 모든 노드도 함께 선택
             const childNode = findNodeById(id, nodes);
             if (childNode?.itemId) {
-                findAllNodesWithItemId(childNode.itemId, nodes).forEach(
-                    (matchingId) => selectedSet.add(matchingId)
-                );
+                findAllNodesWithItemId(childNode.itemId, nodes).forEach((matchingId) => selectedSet.add(matchingId));
             }
         });
     };
 
     // 하위 항목 모두 해제
-    const removeAllChildren = (
-        nodeId: string,
-        selectedSet: Set<string>,
-        nodes: TreeNode[]
-    ) => {
+    const removeAllChildren = (nodeId: string, selectedSet: Set<string>, nodes: TreeNode[]) => {
         const node = findNodeById(nodeId, nodes);
         if (!node) return;
 
@@ -424,18 +372,13 @@ export const TreeView: React.FC<TreeViewProps> = ({
             // 동일한 itemId를 가진 모든 노드도 함께 해제
             const childNode = findNodeById(id, nodes);
             if (childNode?.itemId) {
-                findAllNodesWithItemId(childNode.itemId, nodes).forEach(
-                    (matchingId) => selectedSet.delete(matchingId)
-                );
+                findAllNodesWithItemId(childNode.itemId, nodes).forEach((matchingId) => selectedSet.delete(matchingId));
             }
         });
     };
 
     // 특정 itemId를 가진 모든 노드 찾기
-    const findAllNodesWithItemId = (
-        itemId: string,
-        nodes: TreeNode[]
-    ): string[] => {
+    const findAllNodesWithItemId = (itemId: string, nodes: TreeNode[]): string[] => {
         const nodeIds: string[] = [];
         const search = (nodeList: TreeNode[]) => {
             nodeList.forEach((n) => {
@@ -452,11 +395,7 @@ export const TreeView: React.FC<TreeViewProps> = ({
     };
 
     // 부모 상태 업데이트
-    const updateParentStates = (
-        nodeId: string,
-        selectedSet: Set<string>,
-        nodes: TreeNode[]
-    ) => {
+    const updateParentStates = (nodeId: string, selectedSet: Set<string>, nodes: TreeNode[]) => {
         const node = findNodeById(nodeId, nodes);
         if (!node || !node.itemId) return;
 
@@ -472,9 +411,7 @@ export const TreeView: React.FC<TreeViewProps> = ({
         if (!parentNode) return;
 
         // 모든 자식이 선택되었는지 확인
-        const allChildrenSelected = parentNode.children.every((child) =>
-            selectedSet.has(child.id)
-        );
+        const allChildrenSelected = parentNode.children.every((child) => selectedSet.has(child.id));
 
         if (allChildrenSelected) {
             selectedSet.add(parentNode.id);
@@ -490,20 +427,14 @@ export const TreeView: React.FC<TreeViewProps> = ({
     const getCheckboxState = (node: TreeNode) => {
         const isChecked = selectedItems.has(node.id);
         const childrenIds = getAllChildrenIds(node);
-        const checkedChildren = childrenIds.filter((id) =>
-            selectedItems.has(id)
-        );
+        const checkedChildren = childrenIds.filter((id) => selectedItems.has(id));
 
         if (childrenIds.length === 0) {
             return { checked: isChecked, indeterminate: false };
         }
 
-        const allChildrenChecked =
-            childrenIds.length > 0 &&
-            checkedChildren.length === childrenIds.length;
-        const someChildrenChecked =
-            checkedChildren.length > 0 &&
-            checkedChildren.length < childrenIds.length;
+        const allChildrenChecked = childrenIds.length > 0 && checkedChildren.length === childrenIds.length;
+        const someChildrenChecked = checkedChildren.length > 0 && checkedChildren.length < childrenIds.length;
 
         return {
             checked: allChildrenChecked,
@@ -521,9 +452,7 @@ export const TreeView: React.FC<TreeViewProps> = ({
         const node = findNodeById(nodeId, allTreeNodes);
         if (!node) return;
 
-        const allMatchingNodeIds = node.itemId
-            ? findAllNodesWithItemId(node.itemId, allTreeNodes)
-            : [nodeId];
+        const allMatchingNodeIds = node.itemId ? findAllNodesWithItemId(node.itemId, allTreeNodes) : [nodeId];
 
         if (multiSelect) {
             // 다중 선택 모드
@@ -566,13 +495,10 @@ export const TreeView: React.FC<TreeViewProps> = ({
                         const isDirectlySelected = newSelected.has(node.id);
                         const childrenIds = getAllChildrenIds(node);
                         const allChildrenSelected =
-                            childrenIds.length > 0 &&
-                            childrenIds.every((id) => newSelected.has(id));
+                            childrenIds.length > 0 && childrenIds.every((id) => newSelected.has(id));
 
                         if (isDirectlySelected || allChildrenSelected) {
-                            const item = flattenedItems.find(
-                                (i) => i.id === node.itemId
-                            );
+                            const item = flattenedItems.find((i) => i.id === node.itemId);
                             if (item) {
                                 selectedLabels.push(item.label);
                                 processedItemIds.add(item.id);
@@ -597,9 +523,7 @@ export const TreeView: React.FC<TreeViewProps> = ({
 
                     // 부모가 선택되어 있는지 확인
                     if (item.parentId) {
-                        const parent = flattenedItems.find(
-                            (i) => i.id === item.parentId
-                        );
+                        const parent = flattenedItems.find((i) => i.id === item.parentId);
                         // 부모가 선택되어 있으면 자식은 제외
                         if (parent && selectedLabels.includes(parent.label)) {
                             return false;
@@ -616,12 +540,8 @@ export const TreeView: React.FC<TreeViewProps> = ({
                         return true;
                     }
                     // 자식이 있는 부모인 경우, 자식이 하나라도 선택되어 있으면 부모 제외
-                    const childLabels = item.children.map(
-                        (child) => child.label
-                    );
-                    const hasSelectedChild = childLabels.some((childLabel) =>
-                        selectedLabels.includes(childLabel)
-                    );
+                    const childLabels = item.children.map((child) => child.label);
+                    const hasSelectedChild = childLabels.some((childLabel) => selectedLabels.includes(childLabel));
                     return !hasSelectedChild;
                 });
             }
@@ -650,11 +570,7 @@ export const TreeView: React.FC<TreeViewProps> = ({
     };
 
     // 트리 아이템 렌더링
-    const renderTreeItem = (
-        node: TreeNode,
-        level: number = 0,
-        isLastChild: boolean = false
-    ): React.ReactNode => {
+    const renderTreeItem = (node: TreeNode, level: number = 0, isLastChild: boolean = false): React.ReactNode => {
         const hasChildren = node.children && node.children.length > 0;
         const isExpanded = expandedItems.has(node.id);
         const { checked, indeterminate } = getCheckboxState(node);
@@ -685,10 +601,7 @@ export const TreeView: React.FC<TreeViewProps> = ({
                         </div>
 
                         {checkbox && selectable && (
-                            <div
-                                className="checkbox-container"
-                                onClick={handleCheckboxClick}
-                            >
+                            <div className="checkbox-container" onClick={handleCheckboxClick}>
                                 <div
                                     style={{
                                         cursor: "pointer",
@@ -706,9 +619,7 @@ export const TreeView: React.FC<TreeViewProps> = ({
                                         indeterminate={indeterminate}
                                         disabled={node.disabled}
                                         checkboxColor={styles.checkboxColor}
-                                        checkboxBorderColor={
-                                            styles.checkboxBorderColor
-                                        }
+                                        checkboxBorderColor={styles.checkboxBorderColor}
                                     />
                                 </div>
                             </div>
@@ -723,9 +634,7 @@ export const TreeView: React.FC<TreeViewProps> = ({
                                 className="end-icon-container"
                                 onClick={(e) => e.stopPropagation()}
                                 style={{
-                                    visibility: node.alwaysShowEndIcon
-                                        ? "visible"
-                                        : undefined,
+                                    visibility: node.alwaysShowEndIcon ? "visible" : undefined,
                                 }}
                             >
                                 {node.endIcon}
@@ -735,30 +644,21 @@ export const TreeView: React.FC<TreeViewProps> = ({
                 </div>
 
                 {hasChildren && (
-                    <Collapse
-                        $isOpen={isExpanded}
-                        $shouldAnimate={isAnimationEnabled}
-                    >
+                    <Collapse $isOpen={isExpanded} $shouldAnimate={isAnimationEnabled}>
                         <div
                             className="tree-children"
                             style={
                                 {
                                     ...(showTreeLines
                                         ? {
-                                              "--tree-line-left": `${
-                                                  level * indentSizeValue + 13
-                                              }px`,
+                                              "--tree-line-left": `${level * indentSizeValue + 13}px`,
                                           }
                                         : {}),
                                 } as React.CSSProperties
                             }
                         >
                             {node.children.map((child, index) =>
-                                renderTreeItem(
-                                    child,
-                                    level + 1,
-                                    index === node.children.length - 1
-                                )
+                                renderTreeItem(child, level + 1, index === node.children.length - 1)
                             )}
                         </div>
                     </Collapse>
@@ -805,11 +705,7 @@ export const TreeView: React.FC<TreeViewProps> = ({
                 $border={styles.border}
                 $borderRadius={styles.borderRadius}
                 $padding={styles.padding}
-                $maxHeight={
-                    typeof styles.maxHeight === "number"
-                        ? `${styles.maxHeight}px`
-                        : styles.maxHeight
-                }
+                $maxHeight={typeof styles.maxHeight === "number" ? `${styles.maxHeight}px` : styles.maxHeight}
             >
                 <OverlayScrollbar className="tree-content">
                     <TreeItemContainer
@@ -828,17 +724,11 @@ export const TreeView: React.FC<TreeViewProps> = ({
                     >
                         {filteredTreeNodes.length > 0 ? (
                             filteredTreeNodes.map((node, index) =>
-                                renderTreeItem(
-                                    node,
-                                    0,
-                                    index === filteredTreeNodes.length - 1
-                                )
+                                renderTreeItem(node, 0, index === filteredTreeNodes.length - 1)
                             )
                         ) : (
                             <EmptyMessage>
-                                {debouncedSearchValue
-                                    ? "검색 결과가 없습니다."
-                                    : "표시할 항목이 없습니다."}
+                                {debouncedSearchValue ? "검색 결과가 없습니다." : "표시할 항목이 없습니다."}
                             </EmptyMessage>
                         )}
                     </TreeItemContainer>
