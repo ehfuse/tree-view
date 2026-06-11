@@ -283,6 +283,7 @@ const [resetCount, setResetCount] = useState(0);
 -   **타입**: `boolean`
 -   **기본값**: `true`
 -   **설명**: 검색창 표시 여부를 설정합니다. 검색은 300ms 디바운싱이 적용됩니다.
+-   **검색 동작**: 모든 깊이의 노드 label을 부분일치(대소문자 무시)로 검사합니다. 매칭되는 노드가 접힌 가지 안에 있어도, 검색 중에는 매칭 노드의 모든 조상이 자동으로 펼쳐져 결과가 즉시 보입니다(`defaultExpanded={false}`여도 동일). 비매칭(매칭의 조상도 아닌) 노드는 숨겨집니다. 검색어를 비우면 펼침 상태가 검색 이전 상태로 복원됩니다.
 
 ```tsx
 <TreeView items={items} showSearch={true} />

@@ -551,9 +551,15 @@ export const TreeView: React.FC<TreeViewProps> = ({
         }
     };
 
+    // 검색 활성화 여부 (매칭 경로 강제 펼침에 사용)
+    const isSearchActive = debouncedSearchValue.trim().length > 0;
+
     // 확장/축소 토글
     const toggleExpand = (nodeId: string) => {
         if (!collapsible) return;
+        // 검색 중에는 매칭 경로를 강제로 펼쳐 보여주므로 토글로 펼침 상태를
+        // 변경하지 않는다. (검색을 비우면 검색 이전 상태가 그대로 복원되도록)
+        if (isSearchActive) return;
 
         const newExpanded = new Set(expandedItems);
         if (newExpanded.has(nodeId)) {
@@ -572,7 +578,9 @@ export const TreeView: React.FC<TreeViewProps> = ({
     // 트리 아이템 렌더링
     const renderTreeItem = (node: TreeNode, level: number = 0, isLastChild: boolean = false): React.ReactNode => {
         const hasChildren = node.children && node.children.length > 0;
-        const isExpanded = expandedItems.has(node.id);
+        // 검색 중에는 필터된 트리에서 자식이 있는 노드(= 매칭 노드의 조상)를
+        // 강제로 펼쳐, 접힌 가지 안의 매칭 결과도 즉시 보이게 한다.
+        const isExpanded = (isSearchActive && hasChildren) || expandedItems.has(node.id);
         const { checked, indeterminate } = getCheckboxState(node);
         const isSelected = selectedItems.has(node.id);
 

@@ -283,6 +283,7 @@ const [resetCount, setResetCount] = useState(0);
 -   **Type**: `boolean`
 -   **Default**: `true`
 -   **Description**: Whether to show the search input. Search has 300ms debouncing.
+-   **Search behavior**: Matches node labels at every depth (case-insensitive partial match). When a matching node lives inside a collapsed branch, all of its ancestors are automatically expanded while searching so results are immediately visible (even with `defaultExpanded={false}`). Non-matching nodes that are not ancestors of a match are hidden. Clearing the search term restores the expansion state to what it was before searching.
 
 ```tsx
 <TreeView items={items} showSearch={true} />
