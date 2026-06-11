@@ -174,7 +174,7 @@ const items: TreeItem[] = [
 
 -   **Type**: `number`
 -   **Default**: `undefined`
--   **Description**: When this value changes, all selections are cleared.
+-   **Description**: Selections are cleared **only when this value changes** (edge-triggered). Re-rendering with the same value does not clear selections, so items checked after a reset are preserved.
 
 ```tsx
 const [resetCount, setResetCount] = useState(0);

@@ -174,7 +174,7 @@ const items: TreeItem[] = [
 
 -   **타입**: `number`
 -   **기본값**: `undefined`
--   **설명**: 이 값이 변경되면 모든 선택이 초기화됩니다.
+-   **설명**: 이 값이 **변경될 때만** 모든 선택이 초기화됩니다(엣지 트리거). 값이 그대로인 채 리렌더되면 초기화되지 않으므로, 초기화 이후 새로 체크한 항목이 유지됩니다.
 
 ```tsx
 const [resetCount, setResetCount] = useState(0);

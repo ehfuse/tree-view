@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
 import styled from "styled-components";
 import BasicExample from "./pages/BasicExample";
 import CustomStyleExample from "./pages/CustomStyleExample";
+import ResetCheckTest from "./pages/ResetCheckTest";
 import "./App.css";
 
 const AppContainer = styled.div`
@@ -68,6 +69,9 @@ function App() {
                         <li>
                             <Link to="/custom-style">Custom Style</Link>
                         </li>
+                        <li>
+                            <Link to="/reset-check-test">Reset + Search Test</Link>
+                        </li>
                     </ul>
                 </Sidebar>
                 <MainContent>
@@ -76,6 +80,10 @@ function App() {
                         <Route
                             path="/custom-style"
                             element={<CustomStyleExample />}
+                        />
+                        <Route
+                            path="/reset-check-test"
+                            element={<ResetCheckTest />}
                         />
                     </Routes>
                 </MainContent>

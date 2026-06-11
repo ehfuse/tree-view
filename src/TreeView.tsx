@@ -300,13 +300,21 @@ export const TreeView: React.FC<TreeViewProps> = ({
     }, [initialSelections, buildSelectedIds]);
 
     // 리셋 트리거
+    // resetTrigger 값이 "실제로 변경"됐을 때만 선택을 초기화한다.
+    // (initialSelections 기본값 []·buildSelectedIds 재계산으로 effect가 매 렌더
+    //  재실행될 수 있는데, 레벨 트리거로 두면 resetTrigger>0 동안 매 렌더마다
+    //  선택이 지워져, 검색/reset 이후 새 체크가 즉시 wipe되는 버그가 발생한다.)
+    const prevResetTriggerRef = useRef(resetTrigger);
     useEffect(() => {
-        if (resetTrigger && resetTrigger > 0) {
-            if (initialSelections.length === 0) {
-                setSelectedItems(new Set());
-            } else {
-                setSelectedItems(buildSelectedIds());
-            }
+        if (resetTrigger === prevResetTriggerRef.current) return;
+        prevResetTriggerRef.current = resetTrigger;
+
+        if (!resetTrigger || resetTrigger <= 0) return;
+
+        if (initialSelections.length === 0) {
+            setSelectedItems(new Set());
+        } else {
+            setSelectedItems(buildSelectedIds());
         }
     }, [resetTrigger, initialSelections, buildSelectedIds]);
 
