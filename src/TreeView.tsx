@@ -52,6 +52,9 @@ export const TreeView: React.FC<TreeViewProps> = ({
     },
     className,
     style,
+    highlightTerm,
+    highlightColor = "#3b9eff",
+    toggleCheckOnLabelClick = false,
 }) => {
     // indentSize 기본값 처리
     const indentSizeValue = styles.indentSize ?? 20;
@@ -583,6 +586,32 @@ export const TreeView: React.FC<TreeViewProps> = ({
         e.stopPropagation();
     };
 
+    // 라벨에서 검색어(highlightTerm) 부분 문자열만 강조색으로 렌더한다(대소문자 무시).
+    // node.label 문자열 자체는 선택 키로 쓰이므로 변경하지 않고, 표시만 분할한다.
+    const renderLabel = (label: string): React.ReactNode => {
+        const term = (highlightTerm ?? "").trim();
+        if (!term) return label;
+        const lower = label.toLowerCase();
+        const lowerTerm = term.toLowerCase();
+        const parts: React.ReactNode[] = [];
+        let from = 0;
+        let idx = lower.indexOf(lowerTerm, from);
+        if (idx === -1) return label;
+        let key = 0;
+        while (idx !== -1) {
+            if (idx > from) parts.push(label.slice(from, idx));
+            parts.push(
+                <span key={`hl-${key++}`} style={{ color: highlightColor }}>
+                    {label.slice(idx, idx + term.length)}
+                </span>
+            );
+            from = idx + term.length;
+            idx = lower.indexOf(lowerTerm, from);
+        }
+        if (from < label.length) parts.push(label.slice(from));
+        return parts;
+    };
+
     // 트리 아이템 렌더링
     const renderTreeItem = (node: TreeNode, level: number = 0, isLastChild: boolean = false): React.ReactNode => {
         const hasChildren = node.children && node.children.length > 0;
@@ -642,7 +671,24 @@ export const TreeView: React.FC<TreeViewProps> = ({
                         )}
 
                         <div className="tree-item-label">
-                            <span>{node.label}</span>
+                            <span
+                                onClick={
+                                    toggleCheckOnLabelClick && checkbox && selectable && !node.disabled
+                                        ? (e) => {
+                                              // 라벨 텍스트만 클릭 토글(라벨 영역 전체 아님). 펼침/접힘과 분리.
+                                              e.stopPropagation();
+                                              handleItemCheck(node.id, !checked);
+                                          }
+                                        : undefined
+                                }
+                                style={
+                                    toggleCheckOnLabelClick && checkbox && selectable && !node.disabled
+                                        ? { cursor: "pointer" }
+                                        : undefined
+                                }
+                            >
+                                {renderLabel(node.label)}
+                            </span>
                         </div>
 
                         {node.endIcon && (

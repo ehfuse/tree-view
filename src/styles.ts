@@ -247,10 +247,13 @@ export const Collapse = styled.div<{
     $isOpen: boolean;
     $shouldAnimate?: boolean;
 }>`
-    overflow: hidden;
+    /* 열렸을 때는 max-height/overflow 제약을 풀어, 깊거나 큰 트리에서 조상 Collapse 의
+       2000px 캡 + overflow:hidden 으로 하위 노드가 잘려 안 보이던 버그를 막는다.
+       닫힘/열림 애니메이션 동안만 finite max-height + hidden 으로 transition 한다. */
+    overflow: ${(props) => (props.$isOpen ? "visible" : "hidden")};
     transition: ${(props) =>
         props.$shouldAnimate ? "max-height 0.2s ease-in-out" : "none"};
-    max-height: ${(props) => (props.$isOpen ? "2000px" : "0")};
+    max-height: ${(props) => (props.$isOpen ? "none" : "0")};
 `;
 
 export const EmptyMessage = styled.div`
