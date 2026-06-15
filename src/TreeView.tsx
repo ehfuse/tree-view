@@ -23,6 +23,8 @@ import {
 
 export const TreeView: React.FC<TreeViewProps> = ({
     onChange,
+    onNodeClick,
+    onNodeContextMenu,
     initialSelections = [],
     resetTrigger,
     defaultExpanded = true,
@@ -107,6 +109,8 @@ export const TreeView: React.FC<TreeViewProps> = ({
                 disabled: item.disabled,
                 styles: item.styles,
                 endIcon: item.endIcon,
+                alwaysShowEndIcon: item.alwaysShowEndIcon,
+                renderLabel: item.renderLabel,
                 children: item.children
                     ? item.children.map((child) => buildSingleNode(child, excludedIds, counter))
                     : buildTreeNodes(sourceItems, item.id, excludedIds, counter),
@@ -135,6 +139,8 @@ export const TreeView: React.FC<TreeViewProps> = ({
                 disabled: item.disabled,
                 styles: item.styles,
                 endIcon: item.endIcon,
+                alwaysShowEndIcon: item.alwaysShowEndIcon,
+                renderLabel: item.renderLabel,
                 children: item.children ? item.children.map((child) => buildSingleNode(child, excludedIds, cnt)) : [],
             };
         },
@@ -621,6 +627,11 @@ export const TreeView: React.FC<TreeViewProps> = ({
         const { checked, indeterminate } = getCheckboxState(node);
         const isSelected = selectedItems.has(node.id);
 
+        // 노드 콜백에 전달할 원본 TreeItem (id 등 소비자 식별용)
+        const originalItem = node.itemId
+            ? flattenedItems.find((item) => item.id === node.itemId)
+            : undefined;
+
         return (
             <div key={node.id} className="tree-node" data-level={level}>
                 <div
@@ -629,7 +640,17 @@ export const TreeView: React.FC<TreeViewProps> = ({
                     } ${isSelected && showSelection ? "selected" : ""} ${
                         isLastChild ? "last-child" : ""
                     } ${isExpanded ? "expanded" : ""}`}
-                    onClick={() => hasChildren && toggleExpand(node.id)}
+                    onClick={(e) => {
+                        if (originalItem && onNodeClick) {
+                            onNodeClick(originalItem, e);
+                        }
+                        if (hasChildren) toggleExpand(node.id);
+                    }}
+                    onContextMenu={
+                        originalItem && onNodeContextMenu
+                            ? (e) => onNodeContextMenu(originalItem, e)
+                            : undefined
+                    }
                     style={{
                         marginLeft: `${level * indentSizeValue}px`,
                     }}
@@ -671,24 +692,28 @@ export const TreeView: React.FC<TreeViewProps> = ({
                         )}
 
                         <div className="tree-item-label">
-                            <span
-                                onClick={
-                                    toggleCheckOnLabelClick && checkbox && selectable && !node.disabled
-                                        ? (e) => {
-                                              // 라벨 텍스트만 클릭 토글(라벨 영역 전체 아님). 펼침/접힘과 분리.
-                                              e.stopPropagation();
-                                              handleItemCheck(node.id, !checked);
-                                          }
-                                        : undefined
-                                }
-                                style={
-                                    toggleCheckOnLabelClick && checkbox && selectable && !node.disabled
-                                        ? { cursor: "pointer" }
-                                        : undefined
-                                }
-                            >
-                                {renderLabel(node.label)}
-                            </span>
+                            {node.renderLabel != null ? (
+                                node.renderLabel
+                            ) : (
+                                <span
+                                    onClick={
+                                        toggleCheckOnLabelClick && checkbox && selectable && !node.disabled
+                                            ? (e) => {
+                                                  // 라벨 텍스트만 클릭 토글(라벨 영역 전체 아님). 펼침/접힘과 분리.
+                                                  e.stopPropagation();
+                                                  handleItemCheck(node.id, !checked);
+                                              }
+                                            : undefined
+                                    }
+                                    style={
+                                        toggleCheckOnLabelClick && checkbox && selectable && !node.disabled
+                                            ? { cursor: "pointer" }
+                                            : undefined
+                                    }
+                                >
+                                    {renderLabel(node.label)}
+                                </span>
+                            )}
                         </div>
 
                         {node.endIcon && (

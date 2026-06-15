@@ -3,6 +3,7 @@ import styled from "styled-components";
 import BasicExample from "./pages/BasicExample";
 import CustomStyleExample from "./pages/CustomStyleExample";
 import ResetCheckTest from "./pages/ResetCheckTest";
+import ContextMenuTest from "./pages/ContextMenuTest";
 import "./App.css";
 
 const AppContainer = styled.div`
@@ -72,6 +73,9 @@ function App() {
                         <li>
                             <Link to="/reset-check-test">Reset + Search Test</Link>
                         </li>
+                        <li>
+                            <Link to="/context-menu-test">Context Menu Test</Link>
+                        </li>
                     </ul>
                 </Sidebar>
                 <MainContent>
@@ -84,6 +88,10 @@ function App() {
                         <Route
                             path="/reset-check-test"
                             element={<ResetCheckTest />}
+                        />
+                        <Route
+                            path="/context-menu-test"
+                            element={<ContextMenuTest />}
                         />
                     </Routes>
                 </MainContent>

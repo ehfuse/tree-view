@@ -48,6 +48,8 @@ Complete API reference for the `@ehfuse/tree-view` component.
 ```typescript
 interface TreeViewProps {
     onChange?: (selectedItemLabels: string[]) => void;
+    onNodeClick?: (item: TreeItem, event: React.MouseEvent) => void;
+    onNodeContextMenu?: (item: TreeItem, event: React.MouseEvent) => void;
     initialSelections?: string[];
     resetTrigger?: number;
     defaultExpanded?: boolean;
@@ -69,8 +71,16 @@ interface TreeViewProps {
     styles?: TreeViewStyles;
     className?: string;
     style?: React.CSSProperties;
+    highlightTerm?: string; // Substring to highlight in labels (case-insensitive)
+    highlightColor?: string; // Highlight font color (default: #3b9eff)
+    toggleCheckOnLabelClick?: boolean; // Toggle check when the label text is clicked
 }
 ```
+
+> `onNodeContextMenu`/`onNodeClick` fire on right-click/click of a node row and
+> receive the original `TreeItem` (including `id`) plus the event. `preventDefault()`
+> is **not** called internally, so the consumer can call `event.preventDefault()` and
+> use `event.clientX/clientY` to open their own menu (e.g. MUI `Menu`).
 
 ## TreeItem
 
@@ -85,6 +95,7 @@ interface TreeItem {
     children?: TreeItem[]; // Child items array
     endIcon?: React.ReactNode; // Right-end icon
     alwaysShowEndIcon?: boolean; // Always show endIcon
+    renderLabel?: React.ReactNode; // Custom node rendered instead of label (skips highlightTerm)
 }
 ```
 

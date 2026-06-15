@@ -48,6 +48,8 @@
 ```typescript
 interface TreeViewProps {
     onChange?: (selectedItemLabels: string[]) => void;
+    onNodeClick?: (item: TreeItem, event: React.MouseEvent) => void;
+    onNodeContextMenu?: (item: TreeItem, event: React.MouseEvent) => void;
     initialSelections?: string[];
     resetTrigger?: number;
     defaultExpanded?: boolean;
@@ -69,8 +71,15 @@ interface TreeViewProps {
     styles?: TreeViewStyles;
     className?: string;
     style?: React.CSSProperties;
+    highlightTerm?: string; // 라벨에서 강조할 검색어 (부분 일치, 대소문자 무시)
+    highlightColor?: string; // 강조 폰트 색상 (기본값: #3b9eff)
+    toggleCheckOnLabelClick?: boolean; // 라벨 텍스트 클릭 시에도 체크 토글
 }
 ```
+
+> `onNodeContextMenu`/`onNodeClick`은 노드 행에서 우클릭/클릭 시 해당 `TreeItem`(id 포함)과
+> 이벤트를 전달합니다. 내부에서 `preventDefault()`를 호출하지 않으므로, 소비자가
+> `event.preventDefault()` + `event.clientX/clientY`로 직접 메뉴를 띄울 수 있습니다.
 
 ## TreeItem
 
@@ -85,6 +94,7 @@ interface TreeItem {
     children?: TreeItem[]; // 자식 아이템 배열
     endIcon?: React.ReactNode; // 우측 끝 아이콘
     alwaysShowEndIcon?: boolean; // endIcon 항상 표시
+    renderLabel?: React.ReactNode; // label 대신 렌더할 커스텀 노드 (highlightTerm 강조 미적용)
 }
 ```
 

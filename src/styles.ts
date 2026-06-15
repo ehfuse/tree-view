@@ -29,12 +29,15 @@ export const TreeContainer = styled.div<{
 }>`
     display: flex;
     flex-direction: column;
+    flex: 1;
+    min-height: 0;
     background-color: ${(props) => props.$backgroundColor || "#ffffff"};
     border: ${(props) => props.$border || "1px solid #ddd"};
     border-radius: ${(props) => props.$borderRadius || "4px"};
 
     .tree-content {
         flex: 1;
+        min-height: 0;
         overflow-y: auto;
         max-height: ${(props) => props.$maxHeight || "none"};
     }

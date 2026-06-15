@@ -27,6 +27,7 @@ export interface TreeItem {
     children?: TreeItem[]; // 자식 아이템 배열
     endIcon?: React.ReactNode; // 우측 끝에 표시될 아이콘
     alwaysShowEndIcon?: boolean; // endIcon을 항상 표시 (호버 설정 무시)
+    renderLabel?: React.ReactNode; // label 텍스트 대신 렌더할 커스텀 노드 (지정 시 highlightTerm 강조는 미적용)
 }
 
 /** 트리뷰 전체 컨테이너 스타일 설정 */
@@ -52,6 +53,8 @@ export interface TreeViewStyles {
 /** 트리뷰 컴포넌트 Props */
 export interface TreeViewProps {
     onChange?: (selectedItemLabels: string[]) => void; // 선택 변경 콜백 (선택된 아이템의 label 배열)
+    onNodeClick?: (item: TreeItem, event: React.MouseEvent) => void; // 노드 행 클릭 콜백 (해당 TreeItem 전달)
+    onNodeContextMenu?: (item: TreeItem, event: React.MouseEvent) => void; // 노드 행 우클릭 콜백 (preventDefault는 소비자가 직접 호출)
     initialSelections?: string[]; // 초기 선택 아이템 (label 배열)
     resetTrigger?: number; // 선택 초기화 트리거 (값 변경 시 선택 해제)
     defaultExpanded?: boolean; // 초기 확장 상태 (true: 모두 펼침)
@@ -89,4 +92,5 @@ export interface TreeNode {
     styles?: TreeItemStyles; // 개별 스타일
     endIcon?: React.ReactNode; // 우측 끝 아이콘
     alwaysShowEndIcon?: boolean; // endIcon을 항상 표시
+    renderLabel?: React.ReactNode; // label 대신 렌더할 커스텀 노드
 }

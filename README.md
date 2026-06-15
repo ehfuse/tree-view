@@ -59,6 +59,8 @@ function App() {
 ```typescript
 interface TreeViewProps {
     onChange?: (selectedItemLabels: string[]) => void;
+    onNodeClick?: (item: TreeItem, event: React.MouseEvent) => void;
+    onNodeContextMenu?: (item: TreeItem, event: React.MouseEvent) => void;
     initialSelections?: string[];
     resetTrigger?: number;
     defaultExpanded?: boolean;
@@ -80,6 +82,9 @@ interface TreeViewProps {
     styles?: TreeViewStyles;
     className?: string;
     style?: React.CSSProperties;
+    highlightTerm?: string;
+    highlightColor?: string;
+    toggleCheckOnLabelClick?: boolean;
 }
 
 interface TreeItem {
@@ -92,8 +97,33 @@ interface TreeItem {
     children?: TreeItem[];
     endIcon?: React.ReactNode;
     alwaysShowEndIcon?: boolean;
+    renderLabel?: React.ReactNode;
 }
 ```
+
+## 노드 우클릭 / 클릭 콜백 / Node context-menu & click callbacks
+
+노드 행에서 우클릭(또는 클릭) 시 해당 `TreeItem`을 받아 메뉴를 띄울 수 있습니다.
+`preventDefault()`는 내부에서 호출하지 않으므로 소비자가 직접 처리합니다.
+
+The node row passes the original `TreeItem` to your handler on context-menu / click.
+`preventDefault()` is **not** called internally — handle it yourself.
+
+```tsx
+<TreeView
+    items={items}
+    onNodeContextMenu={(item, e) => {
+        e.preventDefault();
+        setMenu({ anchorPos: { left: e.clientX, top: e.clientY }, node: item });
+    }}
+/>
+```
+
+`renderLabel`을 지정하면 `label` 텍스트 대신 커스텀 ReactNode가 렌더되어,
+콜백 없이도 행에 직접 `onContextMenu`를 붙일 수 있습니다. (지정 시 `highlightTerm` 강조는 미적용)
+
+Set `renderLabel` on a `TreeItem` to render a custom ReactNode instead of the `label`
+text, letting you attach `onContextMenu` directly without the callback.
 
 ## 문서 / Documentation
 
