@@ -111,9 +111,13 @@ export const TreeView: React.FC<TreeViewProps> = ({
                 endIcon: item.endIcon,
                 alwaysShowEndIcon: item.alwaysShowEndIcon,
                 renderLabel: item.renderLabel,
-                children: item.children
-                    ? item.children.map((child) => buildSingleNode(child, excludedIds, counter))
-                    : buildTreeNodes(sourceItems, item.id, excludedIds, counter),
+                // 빈 children 배열([])은 "자식 없음"이 아니라 truthy 이므로, 그대로 두면
+                // parentId 기반(평면) 자식이 무시되어 손자 노드가 빌드/렌더/선택에서 누락된다.
+                // 길이가 0이면 parentId 해석으로 폴백한다(없으면 [] 반환이라 안전).
+                children:
+                    item.children && item.children.length > 0
+                        ? item.children.map((child) => buildSingleNode(child, excludedIds, counter))
+                        : buildTreeNodes(sourceItems, item.id, excludedIds, counter),
             }));
         },
         []

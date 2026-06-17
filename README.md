@@ -91,15 +91,24 @@ interface TreeItem {
     id: string;
     label: string;
     remark?: string;
-    parentId?: string;
+    parentId?: string;        // 평면 구조: 부모 id 로 계층 구성 / flat: build hierarchy by parent id
     disabled?: boolean;
     styles?: TreeItemStyles;
-    children?: TreeItem[];
+    children?: TreeItem[];     // 중첩 구조: 자식 배열 / nested: child array
     endIcon?: React.ReactNode;
     alwaysShowEndIcon?: boolean;
     renderLabel?: React.ReactNode;
 }
 ```
+
+> 계층은 중첩(`children`) 또는 평면(`parentId`) 중 하나로 구성합니다. 빈 배열
+> `children: []`은 "자식 없음"으로 처리되어 `parentId` 기반 자식 해석으로 폴백하므로,
+> 모든 노드에 `children: []`를 붙여 내려주는 평면 데이터도 손자까지 정상 구성됩니다.
+>
+> Build the hierarchy with either nested `children` or flat `parentId`. An empty
+> `children: []` is treated as "no nested children" and falls back to `parentId`
+> resolution, so flat data that carries `children: []` on every node still builds
+> the full descendant tree.
 
 ## 노드 우클릭 / 클릭 콜백 / Node context-menu & click callbacks
 

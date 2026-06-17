@@ -4,6 +4,7 @@ import BasicExample from "./pages/BasicExample";
 import CustomStyleExample from "./pages/CustomStyleExample";
 import ResetCheckTest from "./pages/ResetCheckTest";
 import ContextMenuTest from "./pages/ContextMenuTest";
+import SelectionPropagationTest from "./pages/SelectionPropagationTest";
 import "./App.css";
 
 const AppContainer = styled.div`
@@ -76,6 +77,11 @@ function App() {
                         <li>
                             <Link to="/context-menu-test">Context Menu Test</Link>
                         </li>
+                        <li>
+                            <Link to="/selection-propagation-test">
+                                Selection Propagation Test
+                            </Link>
+                        </li>
                     </ul>
                 </Sidebar>
                 <MainContent>
@@ -92,6 +98,10 @@ function App() {
                         <Route
                             path="/context-menu-test"
                             element={<ContextMenuTest />}
+                        />
+                        <Route
+                            path="/selection-propagation-test"
+                            element={<SelectionPropagationTest />}
                         />
                     </Routes>
                 </MainContent>
