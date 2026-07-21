@@ -366,6 +366,26 @@ export const TreeView: React.FC<TreeViewProps> = ({
         return ids;
     }, []);
 
+    // 말단(leaf) 자손 ID만 수집한다.
+    // 부모 체크 상태는 중간 부모 노드의 id가 selectedItems에 들어있는지와
+    // 무관하게 "모든 말단 자손이 선택됐는가"로만 판정해야 한다. (중간 부모 id는
+    // updateParentStates 경로로만 채워져, 말단을 개별 체크하면 빠질 수 있어
+    // 모든 하위가 체크됐는데 상위가 indeterminate(-)로 보이는 버그가 발생.)
+    const getLeafDescendantIds = useCallback((node: TreeNode): string[] => {
+        const ids: string[] = [];
+        const collect = (n: TreeNode) => {
+            n.children.forEach((child) => {
+                if (child.children && child.children.length > 0) {
+                    collect(child);
+                } else {
+                    ids.push(child.id);
+                }
+            });
+        };
+        collect(node);
+        return ids;
+    }, []);
+
     // 하위 항목 모두 선택
     const addAllChildren = (nodeId: string, selectedSet: Set<string>, nodes: TreeNode[]) => {
         const node = findNodeById(nodeId, nodes);
@@ -447,15 +467,16 @@ export const TreeView: React.FC<TreeViewProps> = ({
     // 체크박스 상태 계산
     const getCheckboxState = (node: TreeNode) => {
         const isChecked = selectedItems.has(node.id);
-        const childrenIds = getAllChildrenIds(node);
-        const checkedChildren = childrenIds.filter((id) => selectedItems.has(id));
+        // 말단 자손 기준으로만 판정한다(중간 부모 id 누락에 영향받지 않음).
+        const leafIds = getLeafDescendantIds(node);
 
-        if (childrenIds.length === 0) {
+        if (leafIds.length === 0) {
             return { checked: isChecked, indeterminate: false };
         }
 
-        const allChildrenChecked = childrenIds.length > 0 && checkedChildren.length === childrenIds.length;
-        const someChildrenChecked = checkedChildren.length > 0 && checkedChildren.length < childrenIds.length;
+        const checkedChildren = leafIds.filter((id) => selectedItems.has(id));
+        const allChildrenChecked = checkedChildren.length === leafIds.length;
+        const someChildrenChecked = checkedChildren.length > 0 && checkedChildren.length < leafIds.length;
 
         return {
             checked: allChildrenChecked,
@@ -514,9 +535,9 @@ export const TreeView: React.FC<TreeViewProps> = ({
                 nodes.forEach((node) => {
                     if (node.itemId && !processedItemIds.has(node.itemId)) {
                         const isDirectlySelected = newSelected.has(node.id);
-                        const childrenIds = getAllChildrenIds(node);
+                        const leafIds = getLeafDescendantIds(node);
                         const allChildrenSelected =
-                            childrenIds.length > 0 && childrenIds.every((id) => newSelected.has(id));
+                            leafIds.length > 0 && leafIds.every((id) => newSelected.has(id));
 
                         if (isDirectlySelected || allChildrenSelected) {
                             const item = flattenedItems.find((i) => i.id === node.itemId);
