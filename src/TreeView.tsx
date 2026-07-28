@@ -9,7 +9,7 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { OverlayScrollbar } from "@ehfuse/overlay-scrollbar";
 
-import { TreeViewProps, TreeItem, TreeNode } from "./types";
+import { TreeViewProps, TreeItem, TreeNode, TreeViewStyles } from "./types";
 import { ExpandMoreIcon, ChevronRightIcon, SearchIcon, CloseIcon, CheckboxIcon } from "./icons";
 import {
     TreeContainer,
@@ -21,18 +21,40 @@ import {
     EmptyMessage,
 } from "./styles";
 
+// 기본값을 렌더 밖에 고정해 매 렌더 새 참조로 인한 불필요한 재계산을 막는다.
+const EMPTY_STRING_ARRAY: string[] = [];
+const EMPTY_TREE_ITEMS: TreeItem[] = [];
+const DEFAULT_TREE_STYLES: TreeViewStyles = {
+    backgroundColor: "#ffffff",
+    selectionColor: "#e3f2fd",
+    hoverColor: "#f5f5f5",
+    border: "1px solid #ddd",
+    borderRadius: "4px",
+    indentSize: 20,
+    padding: "1rem",
+};
+
+/** 펼쳐질 노드가 실제로 새로 추가되는지 확인한다. */
+function hasNewExpandedNode(prev: Set<string>, ensuredExpandedNodeIds: string[]): boolean {
+    return ensuredExpandedNodeIds.some((nodeId) => !prev.has(nodeId));
+}
+
 export const TreeView: React.FC<TreeViewProps> = ({
     onChange,
     onNodeClick,
     onNodeContextMenu,
-    initialSelections = [],
+    initialSelections = EMPTY_STRING_ARRAY,
     resetTrigger,
     defaultExpanded = true,
-    excludeItems = [],
-    items = [],
+    initialExpandedItemIds = EMPTY_STRING_ARRAY,
+    ensureExpandedItemIds = EMPTY_STRING_ARRAY,
+    ensureExpandedVersion = 0,
+    excludeItems = EMPTY_STRING_ARRAY,
+    items = EMPTY_TREE_ITEMS,
     showSearch = true,
     searchSize = "medium",
     searchPlaceholder = "검색어를 입력하세요",
+    searchAutoFocus = false,
     showSelection = false,
     showHover = true,
     showEndIconOnHover = false,
@@ -43,15 +65,7 @@ export const TreeView: React.FC<TreeViewProps> = ({
     showTreeLines = false,
     selectionMode = "parent",
     itemStyles,
-    styles = {
-        backgroundColor: "#ffffff",
-        selectionColor: "#e3f2fd",
-        hoverColor: "#f5f5f5",
-        border: "1px solid #ddd",
-        borderRadius: "4px",
-        indentSize: 20,
-        padding: "1rem",
-    },
+    styles = DEFAULT_TREE_STYLES,
     className,
     style,
     highlightTerm,
@@ -74,6 +88,17 @@ export const TreeView: React.FC<TreeViewProps> = ({
     useEffect(() => {
         onChangeRef.current = onChange;
     }, [onChange]);
+
+    // 마운트 시 검색창 자동 포커스(다이얼로그 트랜지션 이후 안정적으로 잡히도록 한 프레임 뒤에 포커스).
+    useEffect(() => {
+        if (!searchAutoFocus || !showSearch) {
+            return;
+        }
+        const timer = setTimeout(() => {
+            searchInputRef.current?.focus();
+        }, 0);
+        return () => clearTimeout(timer);
+    }, [searchAutoFocus, showSearch]);
 
     // Debounce 검색
     useEffect(() => {
@@ -234,17 +259,59 @@ export const TreeView: React.FC<TreeViewProps> = ({
         return filterTreeBySearch(allTreeNodes, debouncedSearchValue);
     }, [allTreeNodes, debouncedSearchValue, filterTreeBySearch]);
 
+    // initialExpandedItemIds(원본 item id)를 내부 node id 로 변환
+    const initialExpandedNodeIds = useMemo(() => {
+        const expandedIds: string[] = [];
+
+        const collect = (nodes: TreeNode[]) => {
+            nodes.forEach((node) => {
+                if (node.itemId && initialExpandedItemIds.includes(node.itemId) && node.children.length > 0) {
+                    expandedIds.push(node.id);
+                }
+                if (node.children.length > 0) {
+                    collect(node.children);
+                }
+            });
+        };
+
+        collect(allTreeNodes);
+        return expandedIds;
+    }, [allTreeNodes, initialExpandedItemIds]);
+
+    // ensureExpandedItemIds(원본 item id)를 내부 node id 로 변환
+    const ensuredExpandedNodeIds = useMemo(() => {
+        const expandedIds: string[] = [];
+
+        const collect = (nodes: TreeNode[]) => {
+            nodes.forEach((node) => {
+                if (node.itemId && ensureExpandedItemIds.includes(node.itemId) && node.children.length > 0) {
+                    expandedIds.push(node.id);
+                }
+                if (node.children.length > 0) {
+                    collect(node.children);
+                }
+            });
+        };
+
+        collect(allTreeNodes);
+        return expandedIds;
+    }, [allTreeNodes, ensureExpandedItemIds]);
+
     // 기본 확장 설정 (초기 마운트 시에만 실행)
     const isInitialMount = useRef(true);
     const prevDefaultExpanded = useRef(defaultExpanded);
     const prevCollapsible = useRef(collapsible);
+    const prevInitialExpandedItemIdsKey = useRef(initialExpandedItemIds.join("|"));
 
     useEffect(() => {
+        const initialExpandedItemIdsKey = initialExpandedItemIds.join("|");
+
         // 초기 마운트이거나 defaultExpanded 또는 collapsible 값이 변경된 경우에만 실행
         if (
             !isInitialMount.current &&
             prevDefaultExpanded.current === defaultExpanded &&
-            prevCollapsible.current === collapsible
+            prevCollapsible.current === collapsible &&
+            prevInitialExpandedItemIdsKey.current === initialExpandedItemIdsKey
         ) {
             return;
         }
@@ -253,6 +320,7 @@ export const TreeView: React.FC<TreeViewProps> = ({
         isInitialMount.current = false;
         prevDefaultExpanded.current = defaultExpanded;
         prevCollapsible.current = collapsible;
+        prevInitialExpandedItemIdsKey.current = initialExpandedItemIdsKey;
 
         const getAllNodeIds = (nodes: TreeNode[]): string[] => {
             const ids: string[] = [];
@@ -272,6 +340,8 @@ export const TreeView: React.FC<TreeViewProps> = ({
         if (!collapsible || defaultExpanded) {
             const allIds = getAllNodeIds(allTreeNodes);
             setExpandedItems(new Set(allIds));
+        } else if (initialExpandedNodeIds.length > 0) {
+            setExpandedItems(new Set(initialExpandedNodeIds));
         } else {
             setExpandedItems(new Set());
         }
@@ -282,7 +352,46 @@ export const TreeView: React.FC<TreeViewProps> = ({
                 setIsAnimationEnabled(true);
             });
         }
-    }, [defaultExpanded, collapsible, allTreeNodes]);
+    }, [defaultExpanded, collapsible, allTreeNodes, initialExpandedItemIds, initialExpandedNodeIds]);
+
+    // ensureExpandedItemIds: 현재 펼침 상태를 유지한 채 지정 노드만 추가로 펼친다.
+    useEffect(() => {
+        if (ensuredExpandedNodeIds.length === 0) {
+            return;
+        }
+
+        setExpandedItems((prev) => {
+            if (!hasNewExpandedNode(prev, ensuredExpandedNodeIds)) {
+                return prev;
+            }
+
+            const next = new Set(prev);
+            ensuredExpandedNodeIds.forEach((nodeId) => next.add(nodeId));
+            return next;
+        });
+    }, [ensureExpandedVersion, ensuredExpandedNodeIds]);
+
+    // 비활성(disabled) 노드를 선택 목록에 고정한다(역할 기반 권한 등 잠금·체크 표시).
+    const addDisabledNodeIds = useCallback((selectedIds: Set<string>, nodes: TreeNode[]) => {
+        nodes.forEach((node) => {
+            if (node.disabled) {
+                selectedIds.add(node.id);
+            }
+
+            if (node.children.length > 0) {
+                addDisabledNodeIds(selectedIds, node.children);
+            }
+        });
+    }, []);
+
+    // disabled 노드는 항상 선택 상태를 유지한다(트리 변경 시 재적용).
+    useEffect(() => {
+        setSelectedItems((prev) => {
+            const pinned = new Set(prev);
+            addDisabledNodeIds(pinned, allTreeNodes);
+            return pinned.size === prev.size ? prev : pinned;
+        });
+    }, [allTreeNodes, addDisabledNodeIds]);
 
     // 초기 선택 설정
     const isInitialSelectionSet = useRef(false);
@@ -303,8 +412,9 @@ export const TreeView: React.FC<TreeViewProps> = ({
         };
 
         findNodesByLabels(allTreeNodes);
+        addDisabledNodeIds(selectedIds, allTreeNodes);
         return selectedIds;
-    }, [initialSelections, flattenedItems, allTreeNodes]);
+    }, [addDisabledNodeIds, initialSelections, flattenedItems, allTreeNodes]);
 
     useEffect(() => {
         if (initialSelections.length === 0 || isInitialSelectionSet.current) return;
@@ -324,11 +434,8 @@ export const TreeView: React.FC<TreeViewProps> = ({
 
         if (!resetTrigger || resetTrigger <= 0) return;
 
-        if (initialSelections.length === 0) {
-            setSelectedItems(new Set());
-        } else {
-            setSelectedItems(buildSelectedIds());
-        }
+        // initialSelections 가 비어도 buildSelectedIds 가 disabled 고정을 포함하므로 그대로 사용한다.
+        setSelectedItems(buildSelectedIds());
     }, [resetTrigger, initialSelections, buildSelectedIds]);
 
     // selectable이 false로 변경되면 선택 해제
@@ -409,11 +516,21 @@ export const TreeView: React.FC<TreeViewProps> = ({
 
         const childIds = getAllChildrenIds(node);
         childIds.forEach((id) => {
+            // disabled 노드는 부모 해제 캐스케이드에서도 체크를 유지한다.
+            const childNode = findNodeById(id, nodes);
+            if (childNode?.disabled) {
+                return;
+            }
+
             selectedSet.delete(id);
             // 동일한 itemId를 가진 모든 노드도 함께 해제
-            const childNode = findNodeById(id, nodes);
             if (childNode?.itemId) {
-                findAllNodesWithItemId(childNode.itemId, nodes).forEach((matchingId) => selectedSet.delete(matchingId));
+                findAllNodesWithItemId(childNode.itemId, nodes).forEach((matchingId) => {
+                    const matchingNode = findNodeById(matchingId, nodes);
+                    if (!matchingNode?.disabled) {
+                        selectedSet.delete(matchingId);
+                    }
+                });
             }
         });
     };
@@ -440,16 +557,23 @@ export const TreeView: React.FC<TreeViewProps> = ({
         const node = findNodeById(nodeId, nodes);
         if (!node || !node.itemId) return;
 
-        const parentItem = items.find(
-            (item) =>
-                item.children?.some((child) => child.id === node.itemId) ||
-                item.id === items.find((i) => i.id === node.itemId)?.parentId
-        );
+        // 평면화된 목록에서 parentId 우선으로 부모를 찾는다(중첩 children 트리에서도 동작).
+        const currentItem = flattenedItems.find((item) => item.id === node.itemId);
+        const parentItem =
+            (currentItem?.parentId ? flattenedItems.find((item) => item.id === currentItem.parentId) : undefined) ??
+            flattenedItems.find((item) => item.children?.some((child) => child.id === node.itemId));
 
         if (!parentItem) return;
 
         const parentNode = findNodeById(parentItem.id, nodes);
         if (!parentNode) return;
+
+        // disabled 부모는 자식 상태와 무관하게 항상 체크 고정
+        if (parentNode.disabled) {
+            selectedSet.add(parentNode.id);
+            updateParentStates(parentNode.id, selectedSet, nodes);
+            return;
+        }
 
         // 모든 자식이 선택되었는지 확인
         const allChildrenSelected = parentNode.children.every((child) => selectedSet.has(child.id));
@@ -507,9 +631,12 @@ export const TreeView: React.FC<TreeViewProps> = ({
                 // 첫 번째 노드로 부모 상태 업데이트
                 updateParentStates(nodeId, newSelected, allTreeNodes);
             } else {
-                // 모든 동일한 아이템과 그 하위 항목 해제
+                // 모든 동일한 아이템과 그 하위 항목 해제 (disabled 는 체크 유지)
                 allMatchingNodeIds.forEach((id) => {
-                    newSelected.delete(id);
+                    const matchingNode = findNodeById(id, allTreeNodes);
+                    if (!matchingNode?.disabled) {
+                        newSelected.delete(id);
+                    }
                     removeAllChildren(id, newSelected, allTreeNodes);
                 });
                 // 첫 번째 노드로 부모 상태 업데이트
@@ -522,6 +649,8 @@ export const TreeView: React.FC<TreeViewProps> = ({
                 allMatchingNodeIds.forEach((id) => newSelected.add(id));
             }
         }
+
+        addDisabledNodeIds(newSelected, allTreeNodes);
 
         setSelectedItems(newSelected);
 
@@ -664,7 +793,7 @@ export const TreeView: React.FC<TreeViewProps> = ({
                         hasChildren ? "has-children" : ""
                     } ${isSelected && showSelection ? "selected" : ""} ${
                         isLastChild ? "last-child" : ""
-                    } ${isExpanded ? "expanded" : ""}`}
+                    } ${isExpanded ? "expanded" : ""} ${node.disabled ? "disabled" : ""}`}
                     onClick={(e) => {
                         if (originalItem && onNodeClick) {
                             onNodeClick(originalItem, e);
@@ -695,13 +824,13 @@ export const TreeView: React.FC<TreeViewProps> = ({
                             <div className="checkbox-container" onClick={handleCheckboxClick}>
                                 <div
                                     style={{
-                                        cursor: "pointer",
+                                        cursor: node.disabled ? "not-allowed" : "pointer",
                                         display: "flex",
                                         alignItems: "center",
                                     }}
                                     onClick={(e) => {
-                                        if (node.disabled) return;
                                         e.stopPropagation();
+                                        if (node.disabled) return;
                                         handleItemCheck(node.id, !checked);
                                     }}
                                 >
@@ -745,9 +874,12 @@ export const TreeView: React.FC<TreeViewProps> = ({
                             <div
                                 className="end-icon-container"
                                 onClick={(e) => e.stopPropagation()}
-                                style={{
-                                    visibility: node.alwaysShowEndIcon ? "visible" : undefined,
-                                }}
+                                style={
+                                    // 호버 노출 방식이 opacity/pointer-events 기반이라 셋 다 강제한다.
+                                    node.alwaysShowEndIcon
+                                        ? { opacity: 1, visibility: "visible", pointerEvents: "auto" }
+                                        : undefined
+                                }
                             >
                                 {node.endIcon}
                             </div>
@@ -780,7 +912,17 @@ export const TreeView: React.FC<TreeViewProps> = ({
     };
 
     return (
-        <div className={`ehfuse-tree-view ${className || ""}`} style={style}>
+        <div
+            className={`ehfuse-tree-view ${className || ""}`}
+            style={{
+                display: "flex",
+                flexDirection: "column",
+                flex: 1,
+                minHeight: 0,
+                width: "100%",
+                ...style,
+            }}
+        >
             {showSearch && (
                 <SearchContainer>
                     <InputWrapper $searchSize={searchSize}>
@@ -796,6 +938,7 @@ export const TreeView: React.FC<TreeViewProps> = ({
                             value={searchValue}
                             onChange={(e) => setSearchValue(e.target.value)}
                             spellCheck={false}
+                            autoFocus={searchAutoFocus}
                         />
                         {searchValue && (
                             <div
@@ -817,6 +960,7 @@ export const TreeView: React.FC<TreeViewProps> = ({
                 $border={styles.border}
                 $borderRadius={styles.borderRadius}
                 $padding={styles.padding}
+                $height={typeof styles.height === "number" ? `${styles.height}px` : styles.height}
                 $maxHeight={typeof styles.maxHeight === "number" ? `${styles.maxHeight}px` : styles.maxHeight}
             >
                 <OverlayScrollbar className="tree-content">

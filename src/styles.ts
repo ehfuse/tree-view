@@ -25,12 +25,15 @@ export const TreeContainer = styled.div<{
     $border?: string;
     $borderRadius?: string;
     $padding?: string;
+    $height?: string;
     $maxHeight?: string;
 }>`
     display: flex;
     flex-direction: column;
     flex: 1;
+    height: ${(props) => props.$height || "auto"};
     min-height: 0;
+    width: 100%;
     background-color: ${(props) => props.$backgroundColor || "#ffffff"};
     border: ${(props) => props.$border || "1px solid #ddd"};
     border-radius: ${(props) => props.$borderRadius || "4px"};
@@ -39,6 +42,7 @@ export const TreeContainer = styled.div<{
         flex: 1;
         min-height: 0;
         overflow-y: auto;
+        overflow-x: hidden;
         max-height: ${(props) => props.$maxHeight || "none"};
     }
 `;
@@ -61,6 +65,9 @@ export const TreeItemContainer = styled.div<{
 
     .tree-node {
         position: relative;
+        width: 100%;
+        min-width: 0;
+        box-sizing: border-box;
     }
 
     .tree-children {
@@ -86,6 +93,8 @@ export const TreeItemContainer = styled.div<{
     .tree-item {
         display: flex;
         align-items: center;
+        box-sizing: border-box;
+        min-width: 0;
         padding: 2px 8px 2px 0;
         margin-bottom: ${(props) =>
             props.$itemSpacing || DEFAULT_VALUES.ITEM_SPACING};
@@ -109,18 +118,29 @@ export const TreeItemContainer = styled.div<{
         &.selected {
             background-color: ${(props) => props.$selectionColor || "#e3f2fd"};
         }
+
+        &.disabled {
+            cursor: default;
+        }
+
+        &.disabled .tree-item-label {
+            color: #9ca3af;
+        }
     }
 
     .tree-item-content {
         display: flex;
         align-items: center;
         flex: 1;
+        width: 100%;
+        min-width: 0;
     }
 
     .tree-item-label {
         flex: 1;
         display: flex;
         align-items: center;
+        min-width: 0;
         gap: 0.5rem;
         color: ${(props) => props.$itemStyles?.color || "inherit"};
         font-size: ${(props) =>
@@ -148,13 +168,21 @@ export const TreeItemContainer = styled.div<{
     .end-icon-container {
         display: flex;
         align-items: center;
+        flex-shrink: 0;
         margin-left: auto;
-        visibility: ${(props) =>
-            props.$showEndIconOnHover ? "hidden" : "visible"};
+        opacity: ${(props) => (props.$showEndIconOnHover ? 0 : 1)};
+        visibility: ${(props) => (props.$showEndIconOnHover ? "hidden" : "visible")};
+        pointer-events: ${(props) => (props.$showEndIconOnHover ? "none" : "auto")};
+        transition:
+            opacity 0.15s ease,
+            visibility 0.15s ease;
     }
 
-    .tree-item:hover .end-icon-container {
+    .tree-item:hover .end-icon-container,
+    .tree-item:focus-within .end-icon-container {
+        opacity: 1;
         visibility: visible;
+        pointer-events: auto;
     }
 `;
 

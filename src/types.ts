@@ -38,6 +38,7 @@ export interface TreeViewStyles {
     border?: string; // 테두리
     borderRadius?: string; // 테두리 둥글기
     padding?: string; // 안쪽 여백
+    height?: string | number; // 트리뷰 높이 (number 입력 시 px 단위, 기본값: auto)
     iconColor?: string; // 확장/축소 아이콘 색상
     maxHeight?: string | number; // 트리 컨텐츠 최대 높이 (number 입력 시 px 단위)
     checkboxColor?: string; // 체크박스 배경색 (체크됨)
@@ -58,11 +59,15 @@ export interface TreeViewProps {
     initialSelections?: string[]; // 초기 선택 아이템 (label 배열)
     resetTrigger?: number; // 선택 초기화 트리거 (값 변경 시 선택 해제)
     defaultExpanded?: boolean; // 초기 확장 상태 (true: 모두 펼침)
+    initialExpandedItemIds?: string[]; // 초기 확장할 item id 배열 (defaultExpanded=false 일 때만 의미 있음)
+    ensureExpandedItemIds?: string[]; // 현재 펼침 상태를 유지하면서 추가로 펼칠 item id 배열
+    ensureExpandedVersion?: number; // ensureExpandedItemIds 재적용 트리거 (값 변경 시 다시 펼침)
     excludeItems?: string[]; // 제외할 아이템 label 배열
     items: TreeItem[]; // 트리 데이터
     showSearch?: boolean; // 검색창 표시 여부
     searchSize?: "small" | "medium" | "large"; // 검색창 크기 (기본값: "medium")
     searchPlaceholder?: string; // 검색창 placeholder (기본값: "검색어를 입력하세요")
+    searchAutoFocus?: boolean; // 마운트 시 검색창 자동 포커스 여부 (기본값: false)
     showSelection?: boolean; // 선택된 아이템 배경색 표시 여부
     showHover?: boolean; // 호버 배경색 표시 여부
     showEndIconOnHover?: boolean; // endIcon을 호버 시에만 표시 (기본값: false)
