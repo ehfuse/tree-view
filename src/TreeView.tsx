@@ -845,29 +845,25 @@ export const TreeView: React.FC<TreeViewProps> = ({
                             </div>
                         )}
 
-                        <div className="tree-item-label">
-                            {node.renderLabel != null ? (
-                                node.renderLabel
-                            ) : (
-                                <span
-                                    onClick={
-                                        toggleCheckOnLabelClick && checkbox && selectable && !node.disabled
-                                            ? (e) => {
-                                                  // 라벨 텍스트만 클릭 토글(라벨 영역 전체 아님). 펼침/접힘과 분리.
-                                                  e.stopPropagation();
-                                                  handleItemCheck(node.id, !checked);
-                                              }
-                                            : undefined
-                                    }
-                                    style={
-                                        toggleCheckOnLabelClick && checkbox && selectable && !node.disabled
-                                            ? { cursor: "pointer" }
-                                            : undefined
-                                    }
-                                >
-                                    {renderLabel(node.label)}
-                                </span>
-                            )}
+                        {/* 라벨 영역 클릭 토글 — renderLabel(직접 그린 라벨)도 포함한다(1.0.16). 예전에는 기본 글자 span 에만 걸려
+                            이름을 직접 그리는 소비처(직원 고르기 창)에서는 체크박스를 정확히 눌러야만 골라졌다. 펼침/접힘과는 분리한다. */}
+                        <div
+                            className="tree-item-label"
+                            onClick={
+                                toggleCheckOnLabelClick && checkbox && selectable && !node.disabled
+                                    ? (e) => {
+                                          e.stopPropagation();
+                                          handleItemCheck(node.id, !checked);
+                                      }
+                                    : undefined
+                            }
+                            style={
+                                toggleCheckOnLabelClick && checkbox && selectable && !node.disabled
+                                    ? { cursor: "pointer" }
+                                    : undefined
+                            }
+                        >
+                            {node.renderLabel != null ? node.renderLabel : <span>{renderLabel(node.label)}</span>}
                         </div>
 
                         {node.endIcon && (

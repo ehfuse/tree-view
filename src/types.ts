@@ -83,7 +83,7 @@ export interface TreeViewProps {
     style?: React.CSSProperties; // 최상위 div 인라인 스타일
     highlightTerm?: string; // 라벨에서 강조할 검색어(부분 일치, 대소문자 무시). 외부 필터와 함께 쓴다.
     highlightColor?: string; // 강조 폰트 색상 (기본값: #3b9eff 밝은 파랑)
-    toggleCheckOnLabelClick?: boolean; // 라벨 텍스트 클릭 시에도 체크 토글 (텍스트 span 만, 라벨 영역 전체 아님)
+    toggleCheckOnLabelClick?: boolean; // 라벨 영역(직접 그린 renderLabel 포함) 클릭 시에도 체크 토글 — 펼침/접힘과는 분리
 }
 
 /** 내부에서 사용되는 트리 노드 구조 */
