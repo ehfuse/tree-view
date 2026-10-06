@@ -1,6 +1,6 @@
 {
     "name": "@ehfuse/tree-view",
-    "version": "1.0.16",
+    "version": "1.0.17",
     "description": "A customizable React TreeView component",
     "main": "dist/index.js",
     "module": "dist/index.esm.js",
@@ -27,10 +27,10 @@
     "peerDependencies": {
         "react": "^18.0.0 || ^19.0.0",
         "styled-components": "^5.0.0 || ^6.0.0",
-        "@ehfuse/overlay-scrollbar": "^1.5.16"
+        "@ehfuse/overlay-scrollbar": "^1.7.30"
     },
     "devDependencies": {
-        "@ehfuse/overlay-scrollbar": "^1.5.16",
+        "@ehfuse/overlay-scrollbar": "^1.7.30",
         "@types/react": "^18.3.12",
         "@types/styled-components": "^5.1.34",
         "esbuild": "^0.24.0",
