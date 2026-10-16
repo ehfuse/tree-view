@@ -73,7 +73,11 @@ interface TreeViewProps {
     style?: React.CSSProperties;
     highlightTerm?: string; // 라벨에서 강조할 검색어 (부분 일치, 대소문자 무시)
     highlightColor?: string; // 강조 폰트 색상 (기본값: #3b9eff)
-    toggleCheckOnLabelClick?: boolean; // 라벨 텍스트 클릭 시에도 체크 토글
+    toggleCheckOnLabelClick?: boolean | "leaf"; // 라벨 클릭 시에도 체크 토글 ("leaf": 자식 없는 줄만 — 묶음 줄은 눌러서 접고 편다)
+    initialSelectedIds?: string[]; // 초기 선택 (item id 배열) — 같은 label 이 둘일 수 있을 때
+    onSelectionIdsChange?: (selectedItemIds: string[]) => void; // 선택 변경 콜백 (item id 배열)
+    checkMode?: "cascade" | "contain"; // cascade(기본): 부모 체크 → 자식 전체. contain: 그 줄만, 자손은 "포함됨"(체크·흐림·잠금)
+    expandIconPosition?: "start" | "end"; // 접기 화살표 자리 (기본 "start")
 }
 ```
 
@@ -118,6 +122,10 @@ interface TreeViewStyles {
     searchInputFontSize?: string; // 검색창 폰트 크기
     treeLineColor?: string; // 트리 라인 색상
     indentSize?: number; // 들여쓰기 크기 (px)
+    itemPadding?: string; // 줄 안쪽 여백 (기본 "2px 8px 2px 0")
+    itemMinHeight?: string; // 줄 최소 높이
+    checkboxPadding?: string; // 체크박스 둘레 여백 (누르는 자리)
+    searchSpacing?: string; // 검색창 아래 간격 (기본 1rem)
 }
 ```
 

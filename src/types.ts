@@ -49,6 +49,10 @@ export interface TreeViewStyles {
     searchInputFontSize?: string; // 검색 입력창 폰트 크기 (기본값: 16px)
     treeLineColor?: string; // 트리 라인 색상 (기본값: #ddd)
     indentSize?: number; // 들여쓰기 크기 px (기본값: 20)
+    itemPadding?: string; // 아이템 줄 안쪽 여백 (기본값: "2px 8px 2px 0")
+    itemMinHeight?: string; // 아이템 줄 최소 높이 (기본값: 없음)
+    checkboxPadding?: string; // 체크박스 둘레 여백 — 누르는 자리를 키운다 (기본값: 0)
+    searchSpacing?: string; // 검색창과 트리 사이 간격 (기본값: 1rem)
 }
 
 /** 트리뷰 컴포넌트 Props */
@@ -83,7 +87,11 @@ export interface TreeViewProps {
     style?: React.CSSProperties; // 최상위 div 인라인 스타일
     highlightTerm?: string; // 라벨에서 강조할 검색어(부분 일치, 대소문자 무시). 외부 필터와 함께 쓴다.
     highlightColor?: string; // 강조 폰트 색상 (기본값: #3b9eff 밝은 파랑)
-    toggleCheckOnLabelClick?: boolean; // 라벨 영역(직접 그린 renderLabel 포함) 클릭 시에도 체크 토글 — 펼침/접힘과는 분리
+    toggleCheckOnLabelClick?: boolean | "leaf"; // 라벨 영역(직접 그린 renderLabel 포함) 클릭 시에도 체크 토글 — 펼침/접힘과는 분리. "leaf" 면 자식 없는 줄만(묶음 줄은 눌러서 접고 편다)
+    initialSelectedIds?: string[]; // 초기 선택 아이템 (item id 배열) — 같은 이름이 둘일 수 있을 때 initialSelections 대신 쓴다
+    onSelectionIdsChange?: (selectedItemIds: string[]) => void; // 선택 변경 콜백 (선택된 아이템의 id 배열, 중복 없음)
+    checkMode?: "cascade" | "contain"; // cascade(기본): 부모를 체크하면 자식이 모두 체크된다. contain: 그 줄만 체크되고 자손은 "포함됨"(체크·흐림·잠금)으로 보인다
+    expandIconPosition?: "start" | "end"; // 접기 화살표 자리 (기본값: "start" — 줄 맨 앞)
 }
 
 /** 내부에서 사용되는 트리 노드 구조 */

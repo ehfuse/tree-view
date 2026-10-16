@@ -84,7 +84,11 @@ interface TreeViewProps {
     style?: React.CSSProperties;
     highlightTerm?: string;
     highlightColor?: string;
-    toggleCheckOnLabelClick?: boolean;
+    toggleCheckOnLabelClick?: boolean | "leaf";
+    initialSelectedIds?: string[];
+    onSelectionIdsChange?: (selectedItemIds: string[]) => void;
+    checkMode?: "cascade" | "contain";
+    expandIconPosition?: "start" | "end";
 }
 
 interface TreeItem {

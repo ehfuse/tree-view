@@ -71,6 +71,10 @@ export const TreeView: React.FC<TreeViewProps> = ({
     highlightTerm,
     highlightColor = "#3b9eff",
     toggleCheckOnLabelClick = false,
+    initialSelectedIds = EMPTY_STRING_ARRAY,
+    onSelectionIdsChange,
+    checkMode = "cascade",
+    expandIconPosition = "start",
 }) => {
     // indentSize 기본값 처리
     const indentSizeValue = styles.indentSize ?? 20;
@@ -82,12 +86,19 @@ export const TreeView: React.FC<TreeViewProps> = ({
     const [isAnimationEnabled, setIsAnimationEnabled] = useState(false);
 
     const onChangeRef = useRef(onChange);
+    const onSelectionIdsChangeRef = useRef(onSelectionIdsChange);
+    // contain 모드: 체크가 그 줄에만 머문다(자손으로 퍼지지 않고, 자손 체크가 부모로 올라가지도 않는다).
+    const isContain = checkMode === "contain";
     const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const searchInputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
         onChangeRef.current = onChange;
     }, [onChange]);
+
+    useEffect(() => {
+        onSelectionIdsChangeRef.current = onSelectionIdsChange;
+    }, [onSelectionIdsChange]);
 
     // 마운트 시 검색창 자동 포커스(다이얼로그 트랜지션 이후 안정적으로 잡히도록 한 프레임 뒤에 포커스).
     useEffect(() => {
@@ -400,10 +411,13 @@ export const TreeView: React.FC<TreeViewProps> = ({
         const findNodesByLabels = (nodes: TreeNode[]) => {
             nodes.forEach((node) => {
                 const originalLabel = flattenedItems.find((item) => item.id === node.itemId)?.label;
-                if (originalLabel && initialSelections.includes(originalLabel)) {
+                const byLabel = Boolean(originalLabel && initialSelections.includes(originalLabel));
+                // id 로 고른 것 — 같은 이름이 둘이어도 정확히 그 항목만 고른다.
+                const byId = Boolean(node.itemId && initialSelectedIds.includes(node.itemId));
+                if (byLabel || byId) {
                     selectedIds.add(node.id);
-                    // 하위 항목도 모두 선택
-                    addAllChildren(node.id, selectedIds, allTreeNodes);
+                    // 하위 항목도 모두 선택(contain 모드는 그 줄만 — 자손은 "포함됨"으로 그려진다)
+                    if (!isContain) addAllChildren(node.id, selectedIds, allTreeNodes);
                 }
                 if (node.children.length > 0) {
                     findNodesByLabels(node.children);
@@ -414,13 +428,13 @@ export const TreeView: React.FC<TreeViewProps> = ({
         findNodesByLabels(allTreeNodes);
         addDisabledNodeIds(selectedIds, allTreeNodes);
         return selectedIds;
-    }, [addDisabledNodeIds, initialSelections, flattenedItems, allTreeNodes]);
+    }, [addDisabledNodeIds, initialSelections, initialSelectedIds, isContain, flattenedItems, allTreeNodes]);
 
     useEffect(() => {
-        if (initialSelections.length === 0 || isInitialSelectionSet.current) return;
+        if ((initialSelections.length === 0 && initialSelectedIds.length === 0) || isInitialSelectionSet.current) return;
         isInitialSelectionSet.current = true;
         setSelectedItems(buildSelectedIds());
-    }, [initialSelections, buildSelectedIds]);
+    }, [initialSelections, initialSelectedIds, buildSelectedIds]);
 
     // 리셋 트리거
     // resetTrigger 값이 "실제로 변경"됐을 때만 선택을 초기화한다.
@@ -589,8 +603,12 @@ export const TreeView: React.FC<TreeViewProps> = ({
     };
 
     // 체크박스 상태 계산
-    const getCheckboxState = (node: TreeNode) => {
+    const getCheckboxState = (node: TreeNode, contained = false) => {
         const isChecked = selectedItems.has(node.id);
+        // contain 모드는 자손과 무관하게 그 줄만 본다 — 체크된 묶음 아래 줄은 포함됨으로 체크해 보인다.
+        if (isContain) {
+            return { checked: isChecked || contained, indeterminate: false };
+        }
         // 말단 자손 기준으로만 판정한다(중간 부모 id 누락에 영향받지 않음).
         const leafIds = getLeafDescendantIds(node);
 
@@ -620,7 +638,14 @@ export const TreeView: React.FC<TreeViewProps> = ({
 
         const allMatchingNodeIds = node.itemId ? findAllNodesWithItemId(node.itemId, allTreeNodes) : [nodeId];
 
-        if (multiSelect) {
+        if (multiSelect && isContain) {
+            // contain 모드 — 그 줄(과 같은 itemId 줄)만 바꾼다. 자손·부모는 건드리지 않는다.
+            allMatchingNodeIds.forEach((id) => {
+                const matchingNode = findNodeById(id, allTreeNodes);
+                if (checked) newSelected.add(id);
+                else if (!matchingNode?.disabled) newSelected.delete(id);
+            });
+        } else if (multiSelect) {
             // 다중 선택 모드
             if (checked) {
                 // 모든 동일한 아이템과 그 하위 항목 선택
@@ -653,6 +678,29 @@ export const TreeView: React.FC<TreeViewProps> = ({
         addDisabledNodeIds(newSelected, allTreeNodes);
 
         setSelectedItems(newSelected);
+
+        // id 콜백 — 같은 label 이 둘일 수 있는 소비처(사람 고르기)는 label 대신 이것을 쓴다.
+        if (onSelectionIdsChangeRef.current) {
+            const selectedIds: string[] = [];
+            const seen = new Set<string>();
+            const collectSelectedIds = (nodes: TreeNode[]) => {
+                nodes.forEach((node) => {
+                    if (node.itemId && !seen.has(node.itemId)) {
+                        const isDirectlySelected = newSelected.has(node.id);
+                        const leafIds = isContain ? [] : getLeafDescendantIds(node);
+                        const allChildrenSelected =
+                            leafIds.length > 0 && leafIds.every((id) => newSelected.has(id));
+                        if (isDirectlySelected || allChildrenSelected) {
+                            selectedIds.push(node.itemId);
+                            seen.add(node.itemId);
+                        }
+                    }
+                    if (node.children.length > 0) collectSelectedIds(node.children);
+                });
+            };
+            collectSelectedIds(allTreeNodes);
+            onSelectionIdsChangeRef.current(selectedIds);
+        }
 
         // onChange 콜백 호출
         if (onChangeRef.current) {
@@ -773,13 +821,40 @@ export const TreeView: React.FC<TreeViewProps> = ({
     };
 
     // 트리 아이템 렌더링
-    const renderTreeItem = (node: TreeNode, level: number = 0, isLastChild: boolean = false): React.ReactNode => {
+    const renderTreeItem = (
+        node: TreeNode,
+        level: number = 0,
+        isLastChild: boolean = false,
+        contained: boolean = false
+    ): React.ReactNode => {
         const hasChildren = node.children && node.children.length > 0;
         // 검색 중에는 필터된 트리에서 자식이 있는 노드(= 매칭 노드의 조상)를
         // 강제로 펼쳐, 접힌 가지 안의 매칭 결과도 즉시 보이게 한다.
         const isExpanded = (isSearchActive && hasChildren) || expandedItems.has(node.id);
-        const { checked, indeterminate } = getCheckboxState(node);
+        const { checked, indeterminate } = getCheckboxState(node, contained);
         const isSelected = selectedItems.has(node.id);
+        // 체크된 묶음에 딸린 줄(contain)은 따로 고르지 못한다 — 묶음을 풀어야 한다.
+        const locked = Boolean(node.disabled) || contained;
+        const labelToggles =
+            (toggleCheckOnLabelClick === true || (toggleCheckOnLabelClick === "leaf" && !hasChildren)) &&
+            checkbox &&
+            selectable &&
+            !locked;
+        const expandIcon =
+            hasChildren && collapsible ? (
+                isExpanded ? (
+                    expandIconPosition === "end" ? (
+                        // 줄 끝 화살표는 펼친 상태에서 위를 본다(접으면 아래) — MUI ExpandLess/ExpandMore 관례.
+                        <ExpandMoreIcon fontSize="small" style={{ transform: "rotate(180deg)" }} />
+                    ) : (
+                        <ExpandMoreIcon fontSize="small" />
+                    )
+                ) : expandIconPosition === "end" ? (
+                    <ExpandMoreIcon fontSize="small" />
+                ) : (
+                    <ChevronRightIcon fontSize="small" />
+                )
+            ) : null;
 
         // 노드 콜백에 전달할 원본 TreeItem (id 등 소비자 식별용)
         const originalItem = node.itemId
@@ -793,7 +868,9 @@ export const TreeView: React.FC<TreeViewProps> = ({
                         hasChildren ? "has-children" : ""
                     } ${isSelected && showSelection ? "selected" : ""} ${
                         isLastChild ? "last-child" : ""
-                    } ${isExpanded ? "expanded" : ""} ${node.disabled ? "disabled" : ""}`}
+                    } ${isExpanded ? "expanded" : ""} ${node.disabled ? "disabled" : ""} ${
+                        contained ? "contained" : ""
+                    }`}
                     onClick={(e) => {
                         if (originalItem && onNodeClick) {
                             onNodeClick(originalItem, e);
@@ -810,34 +887,28 @@ export const TreeView: React.FC<TreeViewProps> = ({
                     }}
                 >
                     <div className="tree-item-content">
-                        <div className="expand-icon-container">
-                            {hasChildren &&
-                                collapsible &&
-                                (isExpanded ? (
-                                    <ExpandMoreIcon fontSize="small" />
-                                ) : (
-                                    <ChevronRightIcon fontSize="small" />
-                                ))}
-                        </div>
+                        {expandIconPosition !== "end" && <div className="expand-icon-container">{expandIcon}</div>}
 
                         {checkbox && selectable && (
                             <div className="checkbox-container" onClick={handleCheckboxClick}>
                                 <div
                                     style={{
-                                        cursor: node.disabled ? "not-allowed" : "pointer",
+                                        cursor: locked ? "not-allowed" : "pointer",
                                         display: "flex",
                                         alignItems: "center",
+                                        // 누르는 자리를 키운다(폰에서 18px 상자만 정확히 눌러야 하지 않게)
+                                        padding: styles.checkboxPadding,
                                     }}
                                     onClick={(e) => {
                                         e.stopPropagation();
-                                        if (node.disabled) return;
+                                        if (locked) return;
                                         handleItemCheck(node.id, !checked);
                                     }}
                                 >
                                     <CheckboxIcon
                                         checked={checked}
                                         indeterminate={indeterminate}
-                                        disabled={node.disabled}
+                                        disabled={locked}
                                         checkboxColor={styles.checkboxColor}
                                         checkboxBorderColor={styles.checkboxBorderColor}
                                     />
@@ -850,21 +921,21 @@ export const TreeView: React.FC<TreeViewProps> = ({
                         <div
                             className="tree-item-label"
                             onClick={
-                                toggleCheckOnLabelClick && checkbox && selectable && !node.disabled
+                                labelToggles
                                     ? (e) => {
                                           e.stopPropagation();
                                           handleItemCheck(node.id, !checked);
                                       }
                                     : undefined
                             }
-                            style={
-                                toggleCheckOnLabelClick && checkbox && selectable && !node.disabled
-                                    ? { cursor: "pointer" }
-                                    : undefined
-                            }
+                            style={labelToggles ? { cursor: "pointer" } : undefined}
                         >
                             {node.renderLabel != null ? node.renderLabel : <span>{renderLabel(node.label)}</span>}
                         </div>
+
+                        {expandIconPosition === "end" && expandIcon && (
+                            <div className="expand-icon-container at-end">{expandIcon}</div>
+                        )}
 
                         {node.endIcon && (
                             <div
@@ -898,7 +969,12 @@ export const TreeView: React.FC<TreeViewProps> = ({
                             }
                         >
                             {node.children.map((child, index) =>
-                                renderTreeItem(child, level + 1, index === node.children.length - 1)
+                                renderTreeItem(
+                                    child,
+                                    level + 1,
+                                    index === node.children.length - 1,
+                                    isContain && (contained || isSelected)
+                                )
                             )}
                         </div>
                     </Collapse>
@@ -920,7 +996,7 @@ export const TreeView: React.FC<TreeViewProps> = ({
             }}
         >
             {showSearch && (
-                <SearchContainer>
+                <SearchContainer $spacing={styles.searchSpacing}>
                     <InputWrapper $searchSize={searchSize}>
                         <div className="search-icon">
                             <SearchIcon sx={{ color: "#999", mr: 1 }} />
@@ -973,6 +1049,8 @@ export const TreeView: React.FC<TreeViewProps> = ({
                         $showEndIconOnHover={showEndIconOnHover}
                         $showTreeLines={showTreeLines}
                         $treeLineColor={styles.treeLineColor}
+                        $itemPadding={styles.itemPadding}
+                        $itemMinHeight={styles.itemMinHeight}
                     >
                         {filteredTreeNodes.length > 0 ? (
                             filteredTreeNodes.map((node, index) =>

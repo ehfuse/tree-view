@@ -73,7 +73,11 @@ interface TreeViewProps {
     style?: React.CSSProperties;
     highlightTerm?: string; // Substring to highlight in labels (case-insensitive)
     highlightColor?: string; // Highlight font color (default: #3b9eff)
-    toggleCheckOnLabelClick?: boolean; // Toggle check when the label text is clicked
+    toggleCheckOnLabelClick?: boolean | "leaf"; // Toggle check when the label is clicked ("leaf": leaf rows only — group rows toggle expand)
+    initialSelectedIds?: string[]; // Initial selection by item id (use when labels may repeat)
+    onSelectionIdsChange?: (selectedItemIds: string[]) => void; // Selection callback with item ids
+    checkMode?: "cascade" | "contain"; // cascade (default): checking a parent checks all children. contain: only that row; descendants render as included (checked, dimmed, locked)
+    expandIconPosition?: "start" | "end"; // Expand arrow position (default "start")
 }
 ```
 
@@ -119,6 +123,10 @@ interface TreeViewStyles {
     searchInputFontSize?: string; // Search input font size
     treeLineColor?: string; // Tree line color
     indentSize?: number; // Indent size (px)
+    itemPadding?: string; // Row padding (default "2px 8px 2px 0")
+    itemMinHeight?: string; // Row min height
+    checkboxPadding?: string; // Padding around the checkbox (hit area)
+    searchSpacing?: string; // Space below the search box (default 1rem)
 }
 ```
 

@@ -60,6 +60,8 @@ export const TreeItemContainer = styled.div<{
     $showEndIconOnHover?: boolean;
     $showTreeLines?: boolean;
     $treeLineColor?: string;
+    $itemPadding?: string;
+    $itemMinHeight?: string;
 }>`
     padding: ${(props) => props.$padding || "1rem"};
 
@@ -95,7 +97,8 @@ export const TreeItemContainer = styled.div<{
         align-items: center;
         box-sizing: border-box;
         min-width: 0;
-        padding: 2px 8px 2px 0;
+        padding: ${(props) => props.$itemPadding || "2px 8px 2px 0"};
+        min-height: ${(props) => props.$itemMinHeight || "auto"};
         margin-bottom: ${(props) =>
             props.$itemSpacing || DEFAULT_VALUES.ITEM_SPACING};
         border-radius: 4px;
@@ -125,6 +128,11 @@ export const TreeItemContainer = styled.div<{
 
         &.disabled .tree-item-label {
             color: #9ca3af;
+        }
+
+        /* contain 모드에서 체크된 묶음 아래 줄 — 따로 고를 수 없고 묶음에 딸려 들어간다는 표시(흐리게) */
+        &.contained .tree-item-label {
+            opacity: 0.5;
         }
     }
 
@@ -157,12 +165,20 @@ export const TreeItemContainer = styled.div<{
         align-items: center;
         justify-content: center;
         color: ${(props) => props.$iconColor || "inherit"};
+
+        /* expandIconPosition="end" — 줄 끝(라벨 뒤)에 선다. 접기 기능이 없으면 감춘다. */
+        &.at-end {
+            flex-shrink: 0;
+            width: auto;
+            margin-left: 8px;
+        }
     }
 
     .checkbox-container {
         margin-right: ${(props) =>
             props.$checkboxSpacing || DEFAULT_VALUES.CHECKBOX_SPACING};
         display: flex;
+        flex-shrink: 0;
     }
 
     .end-icon-container {
@@ -186,8 +202,8 @@ export const TreeItemContainer = styled.div<{
     }
 `;
 
-export const SearchContainer = styled.div`
-    margin-bottom: 1rem;
+export const SearchContainer = styled.div<{ $spacing?: string }>`
+    margin-bottom: ${(props) => props.$spacing || "1rem"};
 `;
 
 // MUI TextField 기준 크기
