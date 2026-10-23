@@ -862,7 +862,8 @@ export const TreeView: React.FC<TreeViewProps> = ({
             : undefined;
 
         return (
-            <div key={node.id} className="tree-node" data-level={level}>
+            // data-item-id — 바깥에서 끌어 놓은 자리가 어느 항목인지 알 수 있게(1.0.19, 조직도에서 구성원을 그룹에 끌어 넣기).
+            <div key={node.id} className="tree-node" data-level={level} data-item-id={node.itemId ?? undefined}>
                 <div
                     className={`tree-item ${
                         hasChildren ? "has-children" : ""
