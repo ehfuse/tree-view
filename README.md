@@ -89,6 +89,7 @@ interface TreeViewProps {
     onSelectionIdsChange?: (selectedItemIds: string[]) => void;
     checkMode?: "cascade" | "contain";
     expandIconPosition?: "start" | "end";
+    lazyChildren?: boolean; // 접힌 항목의 하위 노드를 그리지 않는다(큰 트리용, 기본 false)
 }
 
 interface TreeItem {

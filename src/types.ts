@@ -92,6 +92,7 @@ export interface TreeViewProps {
     onSelectionIdsChange?: (selectedItemIds: string[]) => void; // 선택 변경 콜백 (선택된 아이템의 id 배열, 중복 없음)
     checkMode?: "cascade" | "contain"; // cascade(기본): 부모를 체크하면 자식이 모두 체크된다. contain: 그 줄만 체크되고 자손은 "포함됨"(체크·흐림·잠금)으로 보인다
     expandIconPosition?: "start" | "end"; // 접기 화살표 자리 (기본값: "start" — 줄 맨 앞)
+    lazyChildren?: boolean; // 접힌 항목의 하위 노드를 그리지 않는다 — 수천 개짜리 트리에서 처음 그리기가 느릴 때 (기본값: false)
 }
 
 /** 내부에서 사용되는 트리 노드 구조 */

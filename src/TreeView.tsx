@@ -75,6 +75,7 @@ export const TreeView: React.FC<TreeViewProps> = ({
     onSelectionIdsChange,
     checkMode = "cascade",
     expandIconPosition = "start",
+    lazyChildren = false,
 }) => {
     // indentSize 기본값 처리
     const indentSizeValue = styles.indentSize ?? 20;
@@ -969,7 +970,7 @@ export const TreeView: React.FC<TreeViewProps> = ({
                                 } as React.CSSProperties
                             }
                         >
-                            {node.children.map((child, index) =>
+                            {(lazyChildren && !isExpanded ? [] : node.children).map((child, index) =>
                                 renderTreeItem(
                                     child,
                                     level + 1,
